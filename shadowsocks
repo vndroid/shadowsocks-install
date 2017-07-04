@@ -1,0 +1,120 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          shadowsocks
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $network $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Fast tunnel proxy that helps you bypass firewalls
+# Description:       A secure socks5 proxy, designed to protect your Internet traffic.
+#		     This package contain local and server part of shadowsocks, a fast,
+#		     powerful tunnel proxy to bypass firewalls.
+### END INIT INFO
+
+# Author: Wave WorkShop <waveworkshop@outlook.com>
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+DESC=shadowsocks             # Introduce a short description here
+NAME=shadowsocks             # Introduce the short server's name here
+CONF=/etc/shadowsocks.json   # Introduce the server's config file
+BIN=/usr/local/bin/ssserver  # Introduce the server's location here
+BIN_ARGS=""                  # Arguments to run the daemon with
+RETVAL=0                     # RETVAL Mark
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+LOGFILE=/var/log/$NAME.log
+
+# Exit if the shadowsocks is not installed
+[ -x $BIN ] || exit 0
+
+# Fonts color
+GREEN="\033[32;1m"
+RED="\033[31;1m"
+YELLOW="\033[33;1m"
+BLUE="\033[34;1m"
+FONT="\033[0m"
+
+# Info messages
+DONE="${GREEN}[DONE]${FONT}"
+FAIL="${RED}[FAIL]${FONT}"
+WARNING="${YELLOW}[WARNING]${FONT}"
+RUNNING="${BLUE}[RUNNING]${FONT}"
+
+check_running()
+{
+    PID=`ps -ef | grep -v grep | grep -i "${BIN}" | awk '{print $2}'`
+    if [ ! -z $PID ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+do_start()
+{
+    # Modify the file descriptor limit
+    ulimit -n 51200
+    # Check status
+    check_running
+    if [ $? -eq 0 ]; then
+        echo -e "${RUNNING}" "$NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
+        exit 0
+    else
+        $BIN -c $CONF -d start >/dev/null 2>&1
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            echo -e "${DONE}"
+        else
+            echo -e "${FAIL}"
+        fi
+    fi
+}
+
+do_stop()
+{
+    check_running
+    if [ $? -eq 0 ]; then
+        $BIN -c $CONF -d stop
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            echo -e "${DONE}"
+        else
+            echo -e "${FAIL}"
+        fi
+    else
+        echo -e "${WARNING}" "$NAME is stopped"
+        RETVAL=1
+    fi
+}
+
+do_status()
+{
+    check_running
+    if [ $? -eq 0 ]; then
+        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${FONT}) is running..."
+    else
+        echo -e "${WARNING} $NAME is ${RED}NOT${FONT} running."
+        RETVAL=1
+    fi
+}
+
+do_restart()
+{
+    # Smoothly restart
+    do_stop
+    sleep 3
+    do_start
+}
+
+case "$1" in
+    start|stop|restart|status)
+    do_$1
+    ;;
+    *)
+    echo "Usage: $0 { start | stop | restart | status }"
+    RETVAL=1
+    ;;
+esac
+
+exit $RETVAL
