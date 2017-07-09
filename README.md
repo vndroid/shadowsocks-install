@@ -4,8 +4,8 @@
 ## Support: 
 * Debian 8 Jessie
 * Debian 9 Stretch
-* Ubuntu 14.04
-* Ubuntu 16.04
+* Ubuntu 14.04 Trusty Tahr
+* Ubuntu 16.04 Xenial Xerus
 ## How to use:
 1. Download the "shadowsocks.sh"
 2. chmod +x shadowsocks.sh
