@@ -1,6 +1,6 @@
-# shadowsocks-install
-Shadowsosks install script
-shadowsocks-python install script for Debian / Ubuntu
+# shadowsocks-python server install
+## Summary
+### shadowsocks-python install script for Debian / Ubuntu
 Support: 
 Debian 8 Jessie
 Debian 9 Stretch
