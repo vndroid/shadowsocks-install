@@ -250,7 +250,7 @@ pre_install(){
     echo
     # Prepare finish
     echo
-    echo -e "Press any key to start...or Press ${RED} Ctrl+C ${FONT} to cancel"
+    echo -e "Press any key to start...or Press ${RED}Ctrl+C${FONT} to cancel"
     char=`get_char`
     # Install necessary dependencies
     apt-get -y update
