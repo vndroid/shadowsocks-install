@@ -358,7 +358,7 @@ install(){
     echo -e "# ${CYAN}Linux version${FONT}:  `linux_version`"
     echo -e "# ${CYAN}Kernel version${FONT}:  `kernel_version`"
     echo -e "#-----------------------------------------------------#"
-    echo -e "#${CYAN}Server${FONT}: ${RED} 113.20.157.99 ${FONT}"
+    echo -e "#${CYAN}Server${FONT}: ${RED} $(get_ip) ${FONT}"
     echo -e "#${CYAN}Remote Port${FONT}: ${RED} ${shadowsocks_port} ${FONT}"
     echo -e "#${CYAN}Local Port${FONT}: ${RED} 1080 ${FONT}"
     echo -e "#${CYAN}Password${FONT}: ${RED} ${shadowsocks_passwd} ${FONT}"
