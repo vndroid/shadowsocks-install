@@ -1,7 +1,7 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    1.0(8)
+# Revision:    1.0(9)
 # Date:        2017/08/19
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
@@ -27,12 +27,6 @@
 #
 # Credits go to Ethan Galstad for coding Nagios
 # If any changes are made to this script, please mail me a copy of the changes
-# -------------------------------------------------------------------------------
-# Update Log
-# Version 1.0(1) 20170606
-# The first version
-# Version 1.0(7) 20170701
-# Fix system detact bug
 # -------------------------------------------------------------------------------
 
 clear
@@ -256,7 +250,7 @@ pre_install(){
     echo
     # Prepare finish
     echo
-    echo "Press any key to start...or Press Ctrl+C to cancel"
+    echo "Press any key to start...or Press ${RED} Ctrl+C ${FONT} to cancel"
     char=`get_char`
     # Install necessary dependencies
     apt-get -y update
@@ -364,7 +358,7 @@ install(){
     echo -e "#${CYAN}Password${FONT}: ${RED} ${shadowsocks_passwd} ${FONT}"
     echo -e "#${CYAN}Encrypt Method${FONT}: ${RED} ${shadowsocks_method} ${FONT}"
     echo -e "#-----------------------------------------------------#"
-    echo -e "#${CYAN}TCPFastOpen${FONT}: ${RED} ${shadowsocks_fastopen} ${FONT}"
+    echo -e "#${CYAN}TCP FastOpen${FONT}: ${RED} ${shadowsocks_fastopen} ${FONT}"
     echo -e "#-----------------------------------------------------#"
     echo
 }
@@ -378,7 +372,7 @@ cleanup(){
 # Optimize the shadowsocks server on Linux
 optimize_linux(){
     # First of all, make sure your Linux kernel is 3.5 or later please."
-    local min=3.5
+    local min=3.11
     local max=`kernel_version`
     if [ `echo "$max > $min" | bc` -eq 1 ]
     then
@@ -492,15 +486,13 @@ case "$action" in
     install|uninstall)
         ${action}_shadowsocks
         ;;
-    v|version)
+    about)
         clear
-        echo -e "version ${BLUE}1.0(10)${FONT}"
-        echo -e "build time ${RED}06302017${FONT}"
         echo -e "Copyright ${BLUE}(C)${FONT} 2016-2017 by ${RED}Wave WorkShop${FONT} <waveworkshop@outlook.com>"
         ;; 
     *)
         clear
         echo "Arguments error! [${action}]"
-        echo "Usage: `basename $0` [install|uninstall]"
+        echo "Usage: `basename $0` [install|uninstall|about]"
         ;;
 esac
