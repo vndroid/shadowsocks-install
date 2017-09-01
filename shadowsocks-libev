@@ -15,11 +15,11 @@
 # PATH should only include /usr/ if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DESC=shadowsocks-libev            # Introduce a short description here
-NAME=shadowsocks-libev       # Introduce the short server's name here
-CONF=/etc/shadowsocks-libev/config.json   # Introduce the server's config file
-BIN=/usr/local/bin/ss-server # Introduce the server's location here
-BIN_ARGS=""                  # Arguments to run the daemon with
-RETVAL=0                     # RETVAL Mark
+NAME=shadowsocks-libev            # Introduce the short server's name here
+CONF=/etc/shadowsocks-libev.json  # Introduce the server's config file
+BIN=/usr/local/bin/ss-server      # Introduce the server's location here
+BIN_ARGS=""                       # Arguments to run the daemon with
+RETVAL=0                          # RETVAL Mark
 PID_DIR=/var/run
 PID_FILE=$PID_DIR/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
