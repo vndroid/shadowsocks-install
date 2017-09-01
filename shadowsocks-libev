@@ -1,0 +1,135 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          shadowsocks-libev
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: lightweight secured socks5 proxy
+# Description:       Shadowsocks-libev is a lightweight secured
+#                    socks5 proxy for embedded devices and low end boxes.
+### END INIT INFO
+
+# Author: Wave WorkShop <waveworkshop@outlook.com>
+
+# PATH should only include /usr/ if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+DESC=shadowsocks-libev            # Introduce a short description here
+NAME=shadowsocks-libev       # Introduce the short server's name here
+CONF=/etc/shadowsocks-libev/config.json   # Introduce the server's config file
+BIN=/usr/local/bin/ss-server # Introduce the server's location here
+BIN_ARGS=""                  # Arguments to run the daemon with
+RETVAL=0                     # RETVAL Mark
+PID_DIR=/var/run
+PID_FILE=$PID_DIR/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+LOGFILE=/var/log/$NAME.log
+
+# Exit if the shadowsocks is not installed
+[ -x $BIN ] || exit 0
+
+# Fonts color
+RED="\033[31;1m"
+GREEN="\033[32;1m"
+YELLOW="\033[33;1m"
+BLUE="\033[34;1m"
+FONT="\033[0m"
+
+# Info messages
+DONE="${GREEN}[DONE]${FONT}"
+FAIL="${RED}[FAIL]${FONT}"
+WARNING="${YELLOW}[WARNING]${FONT}"
+RUNNING="${BLUE}[RUNNING]${FONT}"
+
+# CHECK PID_FILE
+if [ ! -d $PID_DIR ]; then
+    mkdir -p $PID_DIR
+    if [ $? -ne 0 ]; then
+        echo "Creating PID directory $PID_DIR failed"
+        exit 1
+    fi
+fi
+
+# CHECK CONF_FILE
+if [ ! -f $CONF ]; then
+    echo "$NAME config file $CONF not found"
+    exit 1
+fi
+
+check_running() {
+    if [ -r $PID_FILE ]; then
+        read PID < $PID_FILE
+        if [ -d "/proc/$PID" ]; then
+            return 0
+        else
+            rm -f $PID_FILE
+            return 1
+        fi
+    else
+        return 2
+    fi
+}
+
+do_start() {
+    # Modify the file descriptor limit
+    ulimit -n 51200
+    # Check status
+    if check_running; then
+        echo -e "${RUNNING}" "$NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
+        return 0
+    fi
+    $BIN -u -c $CONF -f $PID_FILE
+    if check_running; then
+        echo -e "${DONE}"
+    else
+        echo -e "${FAIL}"
+        RETVAL=1
+    fi
+}
+
+do_stop() {
+    if check_running; then
+        kill -9 $PID
+        rm -f $PID_FILE
+        RETVAL=$?
+        if [ $RETVAL -eq 0 ]; then
+            echo -e "${DONE}"
+        else
+            echo -e "${FAIL}"
+        fi
+    else
+        echo -e "${WARNING}" "$NAME is stopped"
+        RETVAL=1
+    fi
+}
+
+do_restart()
+{
+    # Smoothly restart
+    do_stop
+    sleep 3
+    do_start
+}
+
+do_status()
+{
+    check_running
+    if [ $? -eq 0 ]; then
+        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${FONT}) is running..."
+    else
+        echo -e "${WARNING} $NAME is ${RED}NOT${FONT} running."
+        RETVAL=1
+    fi
+}
+
+case "$1" in
+    start|stop|restart|status)
+    do_$1
+    ;;
+    *)
+    echo "Usage: $0 { start | stop | restart | status }"
+    RETVAL=1
+    ;;
+esac
+
+exit $RETVAL
