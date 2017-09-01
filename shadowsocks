@@ -88,6 +88,14 @@ do_stop()
     fi
 }
 
+do_restart()
+{
+    # Smoothly restart
+    do_stop
+    sleep 3
+    do_start
+}
+
 do_status()
 {
     check_running
@@ -97,14 +105,6 @@ do_status()
         echo -e "${WARNING} $NAME is ${RED}NOT${FONT} running."
         RETVAL=1
     fi
-}
-
-do_restart()
-{
-    # Smoothly restart
-    do_stop
-    sleep 3
-    do_start
 }
 
 case "$1" in
