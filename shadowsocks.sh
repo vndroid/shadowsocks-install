@@ -272,7 +272,7 @@ download_files(){
         exit 1
     fi
     # Download Shadowsocks init script
-    if ! wget --no-check-certificate https://raw.githubusercontent.com/WWSUi/shadowsocks-install/master/shadowsocks -O /etc/init.d/shadowsocks; then
+    if ! wget --no-check-certificate https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks -O /etc/init.d/shadowsocks; then
         echo "Failed to download shadowsocks chkconfig file!"
         exit 1
     fi
