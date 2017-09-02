@@ -45,14 +45,14 @@ RUNNING="${BLUE}[RUNNING]${FONT}"
 if [ ! -d $PID_DIR ]; then
     mkdir -p $PID_DIR
     if [ $? -ne 0 ]; then
-        echo "Creating PID directory $PID_DIR failed"
+        echo -e "${WARNING} Creating PID directory $PID_DIR failed"
         exit 1
     fi
 fi
 
 # CHECK CONF_FILE
 if [ ! -f $CONF ]; then
-    echo "$NAME config file $CONF not found"
+    echo -e "${WARNING} $NAME config file $CONF not found"
     exit 1
 fi
 
@@ -75,7 +75,7 @@ do_start() {
     ulimit -n 51200
     # Check status
     if check_running; then
-        echo -e "${RUNNING}" "$NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
+        echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
         return 0
     fi
     $BIN -u -c $CONF -f $PID_FILE
@@ -98,7 +98,7 @@ do_stop() {
             echo -e "${FAIL}"
         fi
     else
-        echo -e "${WARNING}" "$NAME is stopped"
+        echo -e "${WARNING} $NAME is stopped"
         RETVAL=1
     fi
 }
