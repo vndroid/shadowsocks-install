@@ -41,6 +41,12 @@ FAIL="${RED}[FAIL]${FONT}"
 WARNING="${YELLOW}[WARNING]${FONT}"
 RUNNING="${BLUE}[RUNNING]${FONT}"
 
+# CHECK CONF_FILE
+if [ ! -f $CONF ]; then
+    echo -e "${WARNING} ${GREEN}$CONF${FONT} is ${RED}NOT${FONT} found"
+    exit 1
+fi
+
 check_running()
 {
     PID=`ps -ef | grep -v grep | grep -i "${BIN}" | awk '{print $2}'`
