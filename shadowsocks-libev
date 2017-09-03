@@ -17,16 +17,16 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DESC=shadowsocks-libev            # Introduce a short description here
 NAME=shadowsocks-libev            # Introduce the short server's name here
 CONF=/etc/shadowsocks-libev.json  # Introduce the server's config file
-BIN=/usr/local/bin/ss-server      # Introduce the server's location here
-BIN_ARGS=""                       # Arguments to run the daemon with
+DAEMON=/usr/local/bin/ss-server   # Introduce the server's location here
+DAEMON_ARGS="-u --fast-open"      # Arguments to run the daemon with
+BIN=/usr/local/bin/obfs-server    # Introduce the obfs's location here
 RETVAL=0                          # RETVAL Mark
 PID_DIR=/var/run
 PID_FILE=$PID_DIR/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-LOGFILE=/var/log/$NAME.log
 
 # Exit if the shadowsocks is not installed
-[ -x $BIN ] || exit 0
+[ -x $DAEMON ] || [ -x $BIN ] || exit 0
 
 # Fonts color
 RED="\033[31;1m"
@@ -45,14 +45,14 @@ RUNNING="${BLUE}[RUNNING]${FONT}"
 if [ ! -d $PID_DIR ]; then
     mkdir -p $PID_DIR
     if [ $? -ne 0 ]; then
-        echo -e "${WARNING} Creating PID directory $PID_DIR failed"
+        echo -e "${FAIL} PID File $PID_DIR is ${RED}NOT${FONT} created"
         exit 1
     fi
 fi
 
 # CHECK CONF_FILE
 if [ ! -f $CONF ]; then
-    echo -e "${WARNING} $NAME config file $CONF not found"
+    echo -e "${WARNING} ${GREEN}$CONF${FONT} is ${RED}NOT${FONT} found"
     exit 1
 fi
 
@@ -78,7 +78,7 @@ do_start() {
         echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
         return 0
     fi
-    $BIN -u -c $CONF -f $PID_FILE
+    $DAEMON -c $CONF $DAEMON_ARGS -f $PID_FILE
     if check_running; then
         echo -e "${DONE}"
     else
