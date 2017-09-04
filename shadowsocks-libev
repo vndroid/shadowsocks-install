@@ -18,7 +18,7 @@ DESC=shadowsocks-libev            # Introduce a short description here
 NAME=shadowsocks-libev            # Introduce the short server's name here
 CONF=/etc/shadowsocks-libev.json  # Introduce the server's config file
 DAEMON=/usr/local/bin/ss-server   # Introduce the server's location here
-DAEMON_ARGS="-u --fast-open"      # Arguments to run the daemon with
+DAEMON_ARGS=" "                   # Arguments to run the daemon with
 BIN=/usr/local/bin/obfs-server    # Introduce the obfs's location here
 RETVAL=0                          # RETVAL Mark
 PID_DIR=/var/run
@@ -73,6 +73,8 @@ check_running() {
 do_start() {
     # Modify the file descriptor limit
     ulimit -n 51200
+    # Enable UDP relay and TCP Fastopen
+    local DAEMON_ARGS="-u --fast-open"
     # Check status
     if check_running; then
         echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
