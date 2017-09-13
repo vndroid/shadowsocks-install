@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks-libev.sh
-# Revision:    1.0(1)
-# Date:        2017/09/01
+# Revision:    1.0(2)
+# Date:        2017/09/13
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -28,7 +28,14 @@
 # Credits go to Ethan Galstad for coding Nagios
 # If any changes are made to this script, please mail me a copy of the changes
 # -------------------------------------------------------------------------------
-
+# UPDATE LOG
+# 
+# 0.2 2017-09-13
+# - Fix bugs
+#
+# 0.1 2017-09-01
+# - Initial version
+# -------------------------------------------------------------------------------
 clear
 echo
 echo "#############################################################"
@@ -46,14 +53,14 @@ YELLOW="\033[33;1m"
 BLUE="\033[34;1m"
 PURPLE="\033[35;1m"
 CYAN="\033[36;1m"
-FONT="\033[0m"
+PLAIN="\033[0m"
 
 # Info messages
-FAIL="${RED}[FAIL]${FONT}"
-DONE="${GREEN}[DONE]${FONT}"
-ERROR="${RED}[ERROR]${FONT}"
-WARNING="${YELLOW}[WARNING]${FONT}"
-CANCEL="${CYAN}[CANCEL]${FONT}"
+FAIL="${RED}[FAIL]${PLAIN}"
+DONE="${GREEN}[DONE]${PLAIN}"
+ERROR="${RED}[ERROR]${PLAIN}"
+WARNING="${YELLOW}[WARNING]${PLAIN}"
+CANCEL="${CYAN}[CANCEL]${PLAIN}"
 
 # Current folder
 cur_dir=`pwd`
@@ -255,7 +262,7 @@ pre_install(){
     done
     # Prepare finish
     echo
-    echo -e "Press any key to start...or Press ${RED}Ctrl+C${FONT} to cancel"
+    echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
     char=`get_char`
     # Install necessary dependencies
     apt-get -y update
@@ -354,15 +361,15 @@ install(){
 
     clear
     echo -e "#--------------------------------------#"
-    echo -e "# ${CYAN}Linux version${FONT}:  `linux_version`"
-    echo -e "# ${CYAN}Kernel version${FONT}:  `kernel_version`"
+    echo -e "# ${CYAN}Linux version${PLAIN}:  `linux_version`"
+    echo -e "# ${CYAN}Kernel version${PLAIN}:  `kernel_version`"
     echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}Server${FONT}: ${RED} $(get_ip) ${FONT}"
-    echo -e "# ${CYAN}Remote Port${FONT}: ${RED} ${shadowsocks_port} ${FONT}"
-    echo -e "# ${CYAN}Local Port${FONT}: ${RED} 1080 ${FONT}"
-    echo -e "# ${CYAN}Password${FONT}: ${RED} ${shadowsocks_passwd} ${FONT}"
-    echo -e "# ${CYAN}Encrypt Method${FONT}: ${RED} ${shadowsocks_method} ${FONT}"
-    echo -e "# ${CYAN}Plugin${FONT}: ${RED} obfs${FONT}"
+    echo -e "# ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
+    echo -e "# ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
+    echo -e "# ${CYAN}Local Port${PLAIN}: ${RED} 1080 ${PLAIN}"
+    echo -e "# ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
+    echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} ${shadowsocks_method} ${PLAIN}"
+    echo -e "# ${CYAN}Plugin${PLAIN}: ${RED} obfs${PLAIN}"
     echo -e "#-----------------------------------------------------#"
     echo
 }
@@ -465,6 +472,26 @@ uninstall_shadowsocks(){
         # Restore Linux 
         mv /etc/security/limits.conf.bak /etc/security/limits.conf
         mv /etc/sysctl.conf.bak /etc/sysctl.conf
+        # Delete shadowsocks-libev Files
+        rm -f /usr/local/bin/ss-local
+        rm -f /usr/local/bin/ss-tunnel
+        rm -f /usr/local/bin/ss-server
+        rm -f /usr/local/bin/ss-manager
+        rm -f /usr/local/bin/ss-redir
+        rm -f /usr/local/bin/ss-nat
+        rm -f /usr/local/lib/libshadowsocks-libev.a
+        rm -f /usr/local/lib/libshadowsocks-libev.la
+        rm -f /usr/local/include/shadowsocks.h
+        rm -f /usr/local/lib/pkgconfig/shadowsocks-libev.pc
+        rm -f /usr/local/share/man/man1/ss-local.1
+        rm -f /usr/local/share/man/man1/ss-tunnel.1
+        rm -f /usr/local/share/man/man1/ss-server.1
+        rm -f /usr/local/share/man/man1/ss-manager.1
+        rm -f /usr/local/share/man/man1/ss-redir.1
+        rm -f /usr/local/share/man/man1/ss-nat.1
+        rm -f /usr/local/share/man/man8/shadowsocks-libev.8
+        rm -fr /usr/local/share/doc/shadowsocks-libev
+
         echo "shadowsocks uninstall success! "
     else
         echo
@@ -494,7 +521,7 @@ case "$action" in
         ;;
     about)
         clear
-        echo -e "Copyright ${BLUE}(C)${FONT} 2016-2017 by ${RED}Wave WorkShop${FONT} <waveworkshop@outlook.com>"
+        echo -e "Copyright ${BLUE}(C)${PLAIN} 2016-2017 by ${RED}Wave WorkShop${PLAIN} <waveworkshop@outlook.com>"
         ;; 
     *)
         clear
