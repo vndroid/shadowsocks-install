@@ -28,22 +28,22 @@ LOGFILE=/var/log/$NAME.log
 # Exit if the shadowsocks is not installed
 [ -x $BIN ] || exit 0
 
-# Fonts color
+# Echo color
 RED="\033[31;1m"
 GREEN="\033[32;1m"
 YELLOW="\033[33;1m"
 BLUE="\033[34;1m"
-FONT="\033[0m"
+PLAIN="\033[0m"
 
 # Info messages
-DONE="${GREEN}[DONE]${FONT}"
-FAIL="${RED}[FAIL]${FONT}"
-WARNING="${YELLOW}[WARNING]${FONT}"
-RUNNING="${BLUE}[RUNNING]${FONT}"
+DONE="${GREEN}[DONE]${PLAIN}"
+FAIL="${RED}[FAIL]${PLAIN}"
+WARNING="${YELLOW}[WARNING]${PLAIN}"
+RUNNING="${BLUE}[RUNNING]${PLAIN}"
 
 # CHECK CONF_FILE
 if [ ! -f $CONF ]; then
-    echo -e "${WARNING} ${GREEN}$CONF${FONT} is ${RED}NOT${FONT} found"
+    echo -e "${WARNING} ${GREEN}$CONF${PLAIN} is ${RED}NOT${PLAIN} found"
     exit 1
 fi
 
@@ -64,7 +64,7 @@ do_start()
     # Check status
     check_running
     if [ $? -eq 0 ]; then
-        echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
+        echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${PLAIN}) is already running..."
         exit 0
     else
         $BIN -c $CONF -d start >/dev/null 2>&1
@@ -106,9 +106,9 @@ do_status()
 {
     check_running
     if [ $? -eq 0 ]; then
-        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${FONT}) is running..."
+        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${PLAIN}) is running..."
     else
-        echo -e "${WARNING} $NAME is ${RED}NOT${FONT} running."
+        echo -e "${WARNING} $NAME is ${RED}NOT${PLAIN} running."
         RETVAL=1
     fi
 }
