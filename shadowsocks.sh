@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    1.0(9)
-# Date:        2017/08/19
+# Revision:    1.0(11)
+# Date:        2017/09/13
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -39,21 +39,21 @@ echo "# Github: https://github.com/shadowsocks/shadowsocks        #"
 echo "#############################################################"
 echo
 
-# Fonts color
+# Echo color
 RED="\033[31;1m"
 GREEN="\033[32;1m"
 YELLOW="\033[33;1m"
 BLUE="\033[34;1m"
 PURPLE="\033[35;1m"
 CYAN="\033[36;1m"
-FONT="\033[0m"
+PLAIN="\033[0m"
 
 # Info messages
-FAIL="${RED}[FAIL]${FONT}"
-DONE="${GREEN}[DONE]${FONT}"
-ERROR="${RED}[ERROR]${FONT}"
-WARNING="${YELLOW}[WARNING]${FONT}"
-CANCEL="${CYAN}[CANCEL]${FONT}"
+FAIL="${RED}[FAIL]${PLAIN}"
+DONE="${GREEN}[DONE]${PLAIN}"
+ERROR="${RED}[ERROR]${PLAIN}"
+WARNING="${YELLOW}[WARNING]${PLAIN}"
+CANCEL="${CYAN}[CANCEL]${PLAIN}"
 
 # Current folder
 cur_dir=`pwd`
@@ -168,35 +168,70 @@ pre_install(){
     echo
     # Set shadowsocks encryption method
     echo "Please select encryption method for shadowsocks:"
-    echo "1. rc4-md5"
-    echo "2. chacha20"
-    echo "3. chacha20-ietf"
-    echo "4. aes-128-gcm (recommend)"
-    echo "5. aes-192-gcm"
-    echo "6. aes-256-gcm"
-    echo "7. chacha20-ietf-poly1305"
+    echo "1. rc4-md5                  10. camellia-128-cfb"
+    echo "2. aes-128-cfb              11. camellia-192-cfb"
+    echo "3. aes-192-cfb              12. camellia-256-cfb"
+    echo "4. aes-256-cfb              13. aes-128-gcm"
+    echo "5. aes-128-ctr              14. aes-192-gcm"
+    echo "6. aes-192-ctr              15. aes-256-gcm(recommend)"
+    echo "7. aes-256-ctr              16. sodium:aes-256-gcm"
+    echo "8. chacha20                 17. chacha20-ietf-poly1305"
+    echo "9. chacha20-ietf            18. xchacha20-ietf-poly1305"
     read -p "(Default: aes-128-gcm):" number
     case "$number" in
       1)
         shadowsocks_method="rc4-md5"
         ;;
       2)
-        shadowsocks_method="chacha20"
+        shadowsocks_method="aes-128-cfb"
         ;;
       3)
-        shadowsocks_method="chacha20-ietf"
+        shadowsocks_method="aes-192-cfb"
         ;;
       4)
-        shadowsocks_method="aes-128-gcm"
+        shadowsocks_method="aes-256-cfb"
         ;;
       5)
-        shadowsocks_method="aes-192-gcm"
+        shadowsocks_method="aes-128-ctr"
         ;;
       6)
-        shadowsocks_method="aes-256-gcm"
+        shadowsocks_method="aes-192-ctr"
         ;;
       7)
+        shadowsocks_method="aes-256-ctr"
+        ;;
+      8)
+        shadowsocks_method="chacha20"
+        ;;
+      9)
+        shadowsocks_method="chacha20-ietf"
+        ;;
+      10)
+        shadowsocks_method="camellia-128-cfb"
+        ;;
+      11)
+        shadowsocks_method="camellia-192-cfb"
+        ;;
+      12)
+        shadowsocks_method="camellia-256-cfb"
+        ;;
+      13)
+        shadowsocks_method="aes-128-gcm"
+        ;;
+      14)
+        shadowsocks_method="aes-192-gcm"
+        ;;
+      15)
+        shadowsocks_method="aes-256-gcm"
+        ;;
+      16)
+        shadowsocks_method="sodium:aes-256-gcm"
+        ;;
+      17)
         shadowsocks_method="chacha20-ietf-poly1305"
+        ;;
+      18)
+        shadowsocks_method="xchacha20-ietf-poly1305"
         ;;
       *)
         shadowsocks_method="aes-128-gcm"
@@ -250,7 +285,7 @@ pre_install(){
     echo
     # Prepare finish
     echo
-    echo -e "Press any key to start...or Press ${RED}Ctrl+C${FONT} to cancel"
+    echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
     char=`get_char`
     # Install necessary dependencies
     apt-get -y update
@@ -348,17 +383,17 @@ install(){
     printf "."
     sleep 1
     printf "${DONE}\n"
-    echo -e "#--------------------------------------#"
-    echo -e "# ${CYAN}Linux version${FONT}:  `linux_version`"
-    echo -e "# ${CYAN}Kernel version${FONT}:  `kernel_version`"
     echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}Server${FONT}: ${RED} $(get_ip) ${FONT}"
-    echo -e "# ${CYAN}Remote Port${FONT}: ${RED} ${shadowsocks_port} ${FONT}"
-    echo -e "# ${CYAN}Local Port${FONT}: ${RED} 1080 ${FONT}"
-    echo -e "# ${CYAN}Password${FONT}: ${RED} ${shadowsocks_passwd} ${FONT}"
-    echo -e "# ${CYAN}Encrypt Method${FONT}: ${RED} ${shadowsocks_method} ${FONT}"
+    echo -e "# ${CYAN}OS${PLAIN}:  `linux_version`"
+    echo -e "# ${CYAN}Kernel${PLAIN}:  `kernel_version`"
     echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}TCP FastOpen${FONT}: ${RED} ${shadowsocks_fastopen} ${FONT}"
+    echo -e "# ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
+    echo -e "# ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
+    echo -e "# ${CYAN}Local Port${PLAIN}: ${RED} 1080 ${PLAIN}"
+    echo -e "# ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
+    echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} ${shadowsocks_method} ${PLAIN}"
+    echo -e "#-----------------------------------------------------#"
+    echo -e "# ${CYAN}TCP FastOpen${PLAIN}: ${RED} ${shadowsocks_fastopen} ${PLAIN}"
     echo -e "#-----------------------------------------------------#"
     echo
 }
@@ -436,6 +471,10 @@ optimize_linux(){
         # reload the config at runtime.
         sysctl -p 1> /dev/null
     fi
+    # Backup default config
+    cp /etc/security/limits.conf /etc/security/limits.conf.bak
+    cp /etc/sysctl.conf /etc/sysctl.conf.bak
+
 }
 
 # Uninstall Shadowsocks
@@ -450,7 +489,11 @@ uninstall_shadowsocks(){
         fi
         # Remove system config
         update-rc.d -f shadowsocks remove
-        
+        # Restore system config
+        rm -f /etc/security/limits.conf
+        rm -f /etc/sysctl.conf
+        mv /etc/security/limits.conf.bak /etc/security/limits.conf
+        mv /etc/sysctl.conf.bak /etc/sysctl.conf
         # Delete config file
         rm -f /etc/shadowsocks.json
         rm -f /var/run/shadowsocks.pid
@@ -488,7 +531,7 @@ case "$action" in
         ;;
     about)
         clear
-        echo -e "Copyright ${BLUE}(C)${FONT} 2016-2017 by ${RED}Wave WorkShop${FONT} <waveworkshop@outlook.com>"
+        echo -e "Copyright ${BLUE}(C)${PLAIN} 2016-2017 by ${RED}Wave WorkShop${PLAIN} <waveworkshop@outlook.com>"
         ;; 
     *)
         clear
