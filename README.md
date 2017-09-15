@@ -10,7 +10,7 @@
 ```bash
 wget https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks.sh
 chmod +x shadowsocks.sh
-./shadowsocks.sh 2>&1 | tee shadowsocks.log
+./shadowsocks.sh install 2>&1 | tee shadowsocks.log
 ```
 ## Report issues
 Email Me: waveworkshop@outlook.com
