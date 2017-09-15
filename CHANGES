@@ -1,32 +1,35 @@
-1.1 2017-09-03
+2.0(01) 2017-09-15
+- Almost rewrite install bash
+
+1.0(11) 2017-09-03
 - Add init.d File judgment
 
-1.0 2017-09-01
-- Add shadowsocks-libev init and bash
+1.0(10) 2017-09-01
+- Add shadowsocks-libev init and install bash
 
-0.9 2017-08-19
+1.0(09) 2017-08-19
 - Fix Linux version detection bug
 
-0.8 2017-08-18
+1.0(08) 2017-08-18
 - Fix IP display bug
 
-0.7 2017-07-07
+1.0(07) 2017-07-07
 - Fix system detection bug
 
-0.6 2017-05-02
+1.0(06) 2017-05-02
 - Add hybla congestion control
 
-0.5 2017-03-19
+1.0(05) 2017-03-19
 - Fix text display color
 
-0.4 2017-03-17
+1.0(04) 2017-03-17
 - Add bbr (Google Inc.) support
 
-0.3 2017-03-15
+1.0(03) 2017-03-15
 - Fix bug on Debian 8
 
-0.2 2017-01-01
+1.0(02) 2017-01-01
 - Fix bugs
 
-0.1 2016-12-20
+1.0(01) 2016-12-20
 - Initial version
