@@ -1,13 +1,13 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    1.0(11)
-# Date:        2017/09/13
+# Revision:    2.0(2)
+# Date:        2017/09/15
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
 # Description: shadowsocks python server install for Debian / Ubuntu
-# Notes:       run "./shadowsocks.sh 2>&1 | tee shadowsocks.log"
+# Notes:       run "./shadowsocks.sh install 2>&1 | tee shadowsocks.log"
 # -------------------------------------------------------------------------------
 # Copyright:   2017 (c) Wave WorkShop
 # License:     GPL
@@ -318,19 +318,24 @@ fifth_cleanup(){
 
 # Optimize the shadowsocks server on Linux
 sixth_optimize_kernel(){
-    # First of all, make sure your Linux kernel is 3.5 or later please."
-    local SIM=3.5
-    # Backup default config
-    cp /etc/security/limits.conf /etc/security/limits.conf.bak
-    cp /etc/sysctl.conf /etc/sysctl.conf.bak
-    # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
-    echo "* soft nofile 51200" >> /etc/security/limits.conf
-    echo "* hard nofile 51200" >> /etc/security/limits.conf
-
+    # First of all, make sure your Linux kernel is 3.5 or later please.
+    local LIMVER=3.4
+    # Step 1, increase the maximum number of open file descriptors
+    if [ `echo "$COREVER > $LIMVER" | bc` -eq 1 ]; then
+        # Backup default config
+        cp /etc/security/limits.conf /etc/security/limits.conf.bak
+        cp /etc/sysctl.conf /etc/sysctl.conf.bak
+        # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
+        echo "* soft nofile 51200" >> /etc/security/limits.conf
+        echo "* hard nofile 51200" >> /etc/security/limits.conf
+    else
+        exit 1
+    fi
+    # To use BBR, make sure your Linux kernel is 4.9 or later please.
     local TCP_BBR=4.8
-    if [ `echo "$COREVER > $TCP_BBR" | bc` -eq 1 ]
-    then
-        # Tune the kernel parameters (Use Google BBR)
+    # Step 2, Tune the kernel parameters
+    if [ `echo "$COREVER > $TCP_BBR" | bc` -eq 1 ]; then
+        # Use Google BBR
         echo "fs.file-max = 51200" >> /etc/sysctl.conf
         echo " " >> /etc/sysctl.conf
         echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
@@ -354,7 +359,10 @@ sixth_optimize_kernel(){
         echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
         echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
     else
-        # Tune the kernel parameters (Use hybla)
+        # The priciples of tuning parameters for shadowsocks are
+        # 1.Reuse ports and conections as soon as possible.
+        # 2.Enlarge the queues and buffers as large as possible.
+        # 3.Choose the TCP congestion algorithm for large latency and high throughput.
         echo "fs.file-max = 51200" >> /etc/sysctl.conf
         echo " " >> /etc/sysctl.conf
         echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
@@ -379,8 +387,6 @@ sixth_optimize_kernel(){
     fi
     # reload the config at runtime.
     sysctl -p 1> /dev/null
-
-
 }
 
 # Uninstall Shadowsocks
