@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(01)
-# Date:        2017/09/15
+# Revision:    1.0(11)
+# Date:        2017/09/13
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -64,63 +64,6 @@ rootness(){
         echo -e "${WARNING} must be run as root user." 1>&2
         exit 1
     fi
-}
-
-# Check system compatibility
-support(){
-    # RedHat not support
-    if [[ -s /etc/redhat-release ]]; then
-        clear
-        echo -e "${ERROR} RedHat and CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
-        exit 1
-    fi
-    # OS
-    OSID=$(grep ^ID= /etc/os-release|cut -d= -f2)
-    OSVER=$(lsb_release -cs)
-    OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
-    COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
-    # Debian & Ubuntu
-    case "$OSVER" in
-        wheezy|precise|trusty)
-            clear
-	        echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
-            echo "Not supported Debian 7 / Ubuntu 14 or older version, please update and try again."
-            exit 1
-	        ;;
-        unstable|sid)
-	        # Debian unstable
-            clear
-            echo -e "${WARNING} We strongly encourage you to use stable system."
-            exit 1
-	        ;;
-        jessie)
-	        # Debian 8.0 jessie
-            install_shadowsocks
-	        ;;
-        stretch)
-            # Debian 9.0 stretch
-            install_shadowsocks
-            ;;
-        xenial)
-	        # Ubuntu 16.04 xenial
-            install_shadowsocks
-	        ;;
-        yakkety)
-            # Ubuntu 16.10 yakkety
-            install_shadowsocks
-            ;;
-        zesty)
-            # Ubuntu 17.04 zesty
-            install_shadowsocks
-            ;;
-    esac
-    echo -e "#############################################################"
-    echo -e "#          OS:$OSID                                         #"
-    echo -e "#  OS VERSION:$OSNUM                                        #"
-    echo -e "#     OS CODE:$OSVER                                        #"
-    echo -e "#     KERNEL :$COREVER                                      #"
-    echo -e "#############################################################"
-
 }
 
 # Get public IP address
@@ -332,7 +275,7 @@ fourth_install(){
     # Install shadowsocks
     cd ${cur_dir}
     unzip -q shadowsocks-master.zip
-    if [ $? -ne 0 ];then
+    if [ $? -ne 0 ]; then
         echo -e "${FAIL} unzip shadowsocks-master.zip failed! please check unzip command."
         fifth_cleanup
         exit 1
@@ -375,6 +318,7 @@ fifth_cleanup(){
 # Optimize the shadowsocks server on Linux
 sixth_optimize_kernel(){
     # First of all, make sure your Linux kernel is 3.5 or later please."
+    local SIM=3.5
     # Backup default config
     cp /etc/security/limits.conf /etc/security/limits.conf.bak
     cp /etc/sysctl.conf /etc/sysctl.conf.bak
@@ -481,12 +425,70 @@ install_shadowsocks(){
     sixth_optimize_kernel
 }
 
+# OS
+OSID=$(grep ^ID= /etc/os-release|cut -d= -f2)
+OSVER=$(lsb_release -cs)
+OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
+COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
+INSTALL_MARK=0
+
+# RedHat not support
+if [[ -s /etc/redhat-release ]]; then
+    clear
+    echo -e "${ERROR} RedHat and CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
+    exit 1
+fi
+
+# Debian & Ubuntu
+case "$OSVER" in
+    wheezy|precise|trusty)
+        clear
+	    echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
+        echo "Not supported Debian 7 / Ubuntu 14 or older version, please update and try again."
+        exit 1
+        ;;
+    unstable|sid)
+	    # Debian unstable
+        clear
+        echo -e "${WARNING} We strongly encourage you to use stable system."
+        exit 1
+	    ;;
+    jessie)
+	    # Debian 8.0 jessie
+        INSTALL_MARK=1
+	    ;;
+    stretch)
+        # Debian 9.0 stretch
+        INSTALL_MARK=1
+        ;;
+    xenial)
+	    # Ubuntu 16.04 xenial
+        INSTALL_MARK=1
+	    ;;
+    yakkety)
+        # Ubuntu 16.10 yakkety
+        INSTALL_MARK=1
+        ;;
+    zesty)
+        # Ubuntu 17.04 zesty
+        INSTALL_MARK=1
+        ;;
+esac
+
+echo -e "#############################################################"
+echo -e "#          OS:$OSID                                         #"
+echo -e "#  OS VERSION:$OSNUM                                        #"
+echo -e "#     OS CODE:$OSVER                                        #"
+echo -e "#     KERNEL :$COREVER                                      #"
+echo -e "#############################################################"
+
 # Initialization step
 case "$1" in
     install)
         rootness
-        support
-        $1_shadowsocks
+        if [ $INSTALL_MARK=1 -eq 1 ]; then
+            $1_shadowsocks
+        fi
         ;;
     uninstall)
         rootness
@@ -494,5 +496,6 @@ case "$1" in
         ;;
     *)
         echo "Usage: $0 [install|uninstall]"
+        exit 1
         ;;
 esac
