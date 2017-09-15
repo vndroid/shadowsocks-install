@@ -297,6 +297,7 @@ fourth_install(){
     printf "shadowsocks server installing"
     sleep 1
     clear
+    echo
     echo -e "#-----------------------------------------------------#"
     echo -e "#         ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
     echo -e "#    ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
@@ -481,6 +482,7 @@ echo -e "#  OS VERSION:$OSNUM                                        #"
 echo -e "#     OS CODE:$OSVER                                        #"
 echo -e "#     KERNEL :$COREVER                                      #"
 echo -e "#############################################################"
+echo
 
 # Initialization step
 case "$1" in
