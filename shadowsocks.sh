@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    1.0(11)
-# Date:        2017/09/13
+# Revision:    2.0(01)
+# Date:        2017/09/15
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -61,80 +61,66 @@ cur_dir=`pwd`
 # Make sure only root can run our script
 rootness(){
     if [[ $EUID -ne 0 ]]; then
-        echo -e "${FAIL} must be run as root user." 1>&2
+        echo -e "${WARNING} must be run as root user." 1>&2
         exit 1
     fi
 }
 
-# Check system
-check_sys(){
-    local checkType=$1
-    local value=$2
-    local release=''
-    # Support Debian / Ubuntu only
+# Check system compatibility
+support(){
+    # RedHat not support
     if [[ -s /etc/redhat-release ]]; then
         clear
-        echo -e "${ERROR} CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
+        echo -e "${ERROR} RedHat and CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
         exit 1
     fi
-    # Determine Debian or Ubuntu
-    if cat /etc/issue | grep -Eqi "debian"; then
-        release="debian"
-    elif cat /etc/issue | grep -Eqi "ubuntu"; then
-        release="ubuntu"
-    elif cat /proc/version | grep -Eqi "debian"; then
-        release="debian"
-    elif cat /proc/version | grep -Eqi "ubuntu"; then
-        release="ubuntu"
-    fi
-
-    if [[ ${checkType} == "sysRelease" ]]; then
-        if [ "$value" == "$release" ]; then
-            return 0
-        else
-            return 1
-        fi
-    fi
-}
-
-# Get Linux version
-linux_version(){
-    grep -oE  "[0-9.]+" /etc/issue
-}
-
-# Get Kernel version
-kernel_version(){
-    uname -r |grep -Eo '[0-9].[0-9]+'|sed -n '1,1p'
-}
-
-# Debian or Ubuntu version support
-support(){
-    # bc command check
-    command -v bc >/dev/null 2>&1 || { clear; echo >&2 "The bc command is not installed. Aborting."; exit 1; }
-    # Linux
-    local max=`linux_version`
-    if check_sys sysRelease debian; then
-        local min=7
-        if [ `echo "$max > $min" | bc` -eq 1 ]; then
-            echo "Current: Debian `linux_version`"
-        else
+    # OS
+    OSID=$(grep ^ID= /etc/os-release|cut -d= -f2)
+    OSVER=$(lsb_release -cs)
+    OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
+    COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
+    # Debian & Ubuntu
+    case "$OSVER" in
+        wheezy|precise|trusty)
             clear
-            echo -e "${ERROR}Not supported Debian 7 or older version, please update and try again."
+	        echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
+            echo "Not supported Debian 7 / Ubuntu 14 or older version, please update and try again."
             exit 1
-        fi
-    elif check_sys sysRelease ubuntu; then
-        local min=14
-        local mid=`echo ${max%.*}`
-        local lat=`echo ${mid%.*}`
-        if [ `echo "$lat > $min" | bc` -eq 1 ]; then
-            echo "Current: Ubuntu `linux_version`"
-        else
+	        ;;
+        unstable|sid)
+	        # Debian unstable
             clear
-            echo -e "${ERROR}Not supported Ubnutu 14 or older version, please update and try again."
+            echo -e "${WARNING} We strongly encourage you to use stable system."
             exit 1
-        fi
+	        ;;
+        jessie)
+	        # Debian 8.0 jessie
+            install_shadowsocks
+	        ;;
+        stretch)
+            # Debian 9.0 stretch
+            install_shadowsocks
+            ;;
+        xenial)
+	        # Ubuntu 16.04 xenial
+            install_shadowsocks
+	        ;;
+        yakkety)
+            # Ubuntu 16.10 yakkety
+            install_shadowsocks
+            ;;
+        zesty)
+            # Ubuntu 17.04 zesty
+            install_shadowsocks
+            ;;
+    esac
+    echo -e "#############################################################"
+    echo -e "#          OS:$OSID                                         #"
+    echo -e "#  OS VERSION:$OSNUM                                        #"
+    echo -e "#     OS CODE:$OSVER                                        #"
+    echo -e "#     KERNEL :$COREVER                                      #"
+    echo -e "#############################################################"
 
-    fi
 }
 
 # Get public IP address
@@ -156,7 +142,7 @@ get_char(){
 }
 
 # Prepare installation
-pre_install(){
+first_set_config(){
     # Set shadowsocks config password
     echo "Please input password for shadowsocks:"
     read -p "(Default: material):" shadowsocks_passwd
@@ -290,12 +276,13 @@ pre_install(){
     # Install necessary dependencies
     apt-get -y update
     apt-get -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
-    
+    apt-get -y install screen bc sudo
+    # Return Home
     cd ${cur_dir}
 }
 
 # Download files
-download_files(){
+second_download_files(){
     # Download libsodium file
     if ! wget --no-check-certificate -O libsodium-latest.tar.gz https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
         echo "Failed to download libsodium file!"
@@ -313,8 +300,8 @@ download_files(){
     fi
 }
 
-# Config shadowsocks
-config_shadowsocks(){
+# Write shadowsocks config
+third_write_config(){
     cat > /etc/shadowsocks.json<<-EOF
 {
     "server":"0.0.0.0",
@@ -330,14 +317,14 @@ EOF
 }
 
 # Install shadowsocks
-install(){
+fourth_install(){
     # Install libsodium
     tar zxf libsodium-latest.tar.gz
     cd libsodium-1.*
     ./configure && make && make install
     if [ $? -ne 0 ]; then
         echo "libsodium install failed!"
-        cleanup
+        fifth_cleanup
         exit 1
     fi
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
@@ -346,8 +333,8 @@ install(){
     cd ${cur_dir}
     unzip -q shadowsocks-master.zip
     if [ $? -ne 0 ];then
-        echo "unzip shadowsocks-master.zip failed! please check unzip command."
-        cleanup
+        echo -e "${FAIL} unzip shadowsocks-master.zip failed! please check unzip command."
+        fifth_cleanup
         exit 1
     fi
 
@@ -361,64 +348,42 @@ install(){
     else
         echo
         echo -e "${FAIL} shadowsocks install failed! please email waveworkshop@outlook.com to contact me."
-        cleanup
+        fifth_cleanup
         exit 1
     fi
-
-    clear
     printf "shadowsocks server installing"
     sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "."
-    sleep 1
-    printf "${DONE}\n"
+    clear
     echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}OS${PLAIN}:  `linux_version`"
-    echo -e "# ${CYAN}Kernel${PLAIN}:  `kernel_version`"
-    echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
-    echo -e "# ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
-    echo -e "# ${CYAN}Local Port${PLAIN}: ${RED} 1080 ${PLAIN}"
-    echo -e "# ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
+    echo -e "#         ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
+    echo -e "#    ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
+    echo -e "#     ${CYAN}Local Port${PLAIN}: ${RED} 1080 ${PLAIN}"
+    echo -e "#       ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
     echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} ${shadowsocks_method} ${PLAIN}"
     echo -e "#-----------------------------------------------------#"
-    echo -e "# ${CYAN}TCP FastOpen${PLAIN}: ${RED} ${shadowsocks_fastopen} ${PLAIN}"
+    echo -e "#   ${CYAN}TCP FastOpen${PLAIN}: ${RED} ${shadowsocks_fastopen} ${PLAIN}"
     echo -e "#-----------------------------------------------------#"
     echo
 }
 
 # Cleanup install files
-cleanup(){
+fifth_cleanup(){
     cd ${cur_dir}
     rm -rf shadowsocks-master.zip shadowsocks-master libsodium-latest.tar.gz libsodium-1.*
 }
 
 # Optimize the shadowsocks server on Linux
-optimize_linux(){
+sixth_optimize_kernel(){
     # First of all, make sure your Linux kernel is 3.5 or later please."
-    local min=3.11
-    local max=`kernel_version`
-    if [ `echo "$max > $min" | bc` -eq 1 ]
-    then
-        # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
-        echo "* soft nofile 51200" >> /etc/security/limits.conf
-        echo "* hard nofile 51200" >> /etc/security/limits.conf
-    else
-        exit 1
-    fi
-    local bbr=4.8
-    if [ `echo "$max > $bbr" | bc` -eq 1 ]
+    # Backup default config
+    cp /etc/security/limits.conf /etc/security/limits.conf.bak
+    cp /etc/sysctl.conf /etc/sysctl.conf.bak
+    # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
+    echo "* soft nofile 51200" >> /etc/security/limits.conf
+    echo "* hard nofile 51200" >> /etc/security/limits.conf
+
+    local TCP_BBR=4.8
+    if [ `echo "$COREVER > $TCP_BBR" | bc` -eq 1 ]
     then
         # Tune the kernel parameters (Use Google BBR)
         echo "fs.file-max = 51200" >> /etc/sysctl.conf
@@ -443,8 +408,6 @@ optimize_linux(){
         echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
         echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
         echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-        # reload the config at runtime.
-        sysctl -p 1> /dev/null
     else
         # Tune the kernel parameters (Use hybla)
         echo "fs.file-max = 51200" >> /etc/sysctl.conf
@@ -468,12 +431,10 @@ optimize_linux(){
         echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
         echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
         echo "net.ipv4.tcp_congestion_control = hybla" >> /etc/sysctl.conf
-        # reload the config at runtime.
-        sysctl -p 1> /dev/null
     fi
-    # Backup default config
-    cp /etc/security/limits.conf /etc/security/limits.conf.bak
-    cp /etc/sysctl.conf /etc/sysctl.conf.bak
+    # reload the config at runtime.
+    sysctl -p 1> /dev/null
+
 
 }
 
@@ -510,32 +471,28 @@ uninstall_shadowsocks(){
     fi
 }
 
-# Install shadowsocks-python
+# Install main function
 install_shadowsocks(){
-    rootness
-    support
-    pre_install
-    download_files
-    config_shadowsocks
-    install
-    cleanup
-    optimize_linux
+    first_set_config
+    second_download_files
+    third_write_config
+    fourth_install
+    fifth_cleanup
+    sixth_optimize_kernel
 }
 
 # Initialization step
-action=$1
-[ -z $1 ] && action=install
-case "$action" in
-    install|uninstall)
-        ${action}_shadowsocks
+case "$1" in
+    install)
+        rootness
+        support
+        $1_shadowsocks
         ;;
-    about)
-        clear
-        echo -e "Copyright ${BLUE}(C)${PLAIN} 2016-2017 by ${RED}Wave WorkShop${PLAIN} <waveworkshop@outlook.com>"
-        ;; 
+    uninstall)
+        rootness
+        $1_shadowsocks
+        ;;
     *)
-        clear
-        echo "Arguments error! [${action}]"
-        echo "Usage: `basename $0` [install|uninstall|about]"
+        echo "Usage: $0 [install|uninstall]"
         ;;
 esac
