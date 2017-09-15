@@ -495,6 +495,7 @@ case "$1" in
         $1_shadowsocks
         ;;
     *)
+        clear
         echo "Usage: $0 [install|uninstall]"
         exit 1
         ;;
