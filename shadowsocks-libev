@@ -28,31 +28,32 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Exit if the shadowsocks is not installed
 [ -x $DAEMON ] || [ -x $BIN ] || exit 0
 
-# Fonts color
+# Echo color
 RED="\033[31;1m"
 GREEN="\033[32;1m"
 YELLOW="\033[33;1m"
 BLUE="\033[34;1m"
-FONT="\033[0m"
+PLAIN="\033[0m"
 
 # Info messages
-DONE="${GREEN}[DONE]${FONT}"
-FAIL="${RED}[FAIL]${FONT}"
-WARNING="${YELLOW}[WARNING]${FONT}"
-RUNNING="${BLUE}[RUNNING]${FONT}"
+DONE="${GREEN}[DONE]${PLAIN}"
+FAIL="${RED}[FAIL]${PLAIN}"
+ERROR="${RED}[ERROR]${PLAIN}"
+WARNING="${YELLOW}[WARNING]${PLAIN}"
+RUNNING="${BLUE}[RUNNING]${PLAIN}"
 
 # CHECK PID_FILE
 if [ ! -d $PID_DIR ]; then
     mkdir -p $PID_DIR
     if [ $? -ne 0 ]; then
-        echo -e "${FAIL} PID File $PID_DIR is ${RED}NOT${FONT} created"
+        echo -e "${ERROR} PID File can ${RED}not${PLAIN} created"
         exit 1
     fi
 fi
 
 # CHECK CONF_FILE
 if [ ! -f $CONF ]; then
-    echo -e "${WARNING} ${GREEN}$CONF${FONT} is ${RED}NOT${FONT} found"
+    echo -e "${WARNING} ${GREEN}$CONF${PLAIN} is ${RED}NOT${PLAIN} found"
     exit 1
 fi
 
@@ -77,12 +78,14 @@ do_start() {
     local DAEMON_ARGS="-u --fast-open"
     # Check status
     if check_running; then
-        echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${FONT}) is already running..."
+        echo -e "${RUNNING} $NAME (PID: ${BLUE} $PID ${PLAIN}) is already running..."
         return 0
     fi
     $DAEMON -c $CONF $DAEMON_ARGS -f $PID_FILE
     if check_running; then
         echo -e "${DONE}"
+        TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
+        echo $TEMP_ACTTIME > /tmp/time.log
     else
         echo -e "${FAIL}"
         RETVAL=1
@@ -96,6 +99,8 @@ do_stop() {
         RETVAL=$?
         if [ $RETVAL -eq 0 ]; then
             echo -e "${DONE}"
+            TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
+            echo $TEMP_ACTTIME > /tmp/time.log
         else
             echo -e "${FAIL}"
         fi
@@ -105,31 +110,52 @@ do_stop() {
     fi
 }
 
-do_restart()
-{
-    # Smoothly restart
-    do_stop
-    sleep 3
-    do_start
-}
-
 do_status()
 {
     check_running
     if [ $? -eq 0 ]; then
-        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${FONT}) is running..."
+        local TEMP_RUNTIME=$(ps -eo pid,etime | grep $PID | awk  '{print $2}')
+        echo -e "${GREEN}●${PLAIN} shadowsocks-libev.service - Shadowsocks-libev Default Server Service"
+        echo -e "   Loaded: loaded (/etc/init.d/shadowsocks-libev; enabled; vendor preset: enabled)"
+        echo -e "   Active: ${GREEN}active (running)${PLAIN} since $TEMP_ACTTIME; $TEMP_RUNTIME ago"
+        echo -e "     Docs: man:shadowsocks-libev(8)"
+        echo -e " Main PID: ${BLUE}$PID${PLAIN} (ss-server)"
+        echo -e "    Tasks: 2 (limit: 4915)"
+        echo -e "   CGroup: /system.slice/shadowsocks-libev.service"
+        echo -e "           ├─ $DAEMON -c $CONF $DAEMON_ARGS"
+        echo -e "           └─ $BIN"
     else
-        echo -e "${WARNING} $NAME is ${RED}NOT${FONT} running."
+        local TEMP_ACTTIME=$(cat /tmp/time.log)
+        echo -e "${RED}●${PLAIN} shadowsocks-libev.service - Shadowsocks-libev Default Server Service"
+        echo -e "   Loaded: loaded (/etc/init.d/shadowsocks-libev; enabled; vendor preset: enabled)"
+        echo -e "   Active: ${RED}inactive (dead)${PLAIN} since $TEMP_ACTTIME"
+        echo -e "     Docs: man:shadowsocks-libev(8)"
+        echo -e " Main PID: None (code=exited, status=0/SUCCESS)"
         RETVAL=1
     fi
 }
 
 case "$1" in
-    start|stop|restart|status)
-    do_$1
+    start)
+        do_start
+        exit 0
+    ;;
+    stop)
+        do_stop
+        exit 0
+    ;;
+    reload|restart|force-reload)
+        do_stop
+        sleep 3
+        do_start
+        exit 0
+    ;;
+    status)
+        do_status
+        exit 0
     ;;
     *)
-    echo "Usage: $0 { start | stop | restart | status }"
+    echo "Usage: $0 {start|stop|reload|status}"
     RETVAL=1
     ;;
 esac
