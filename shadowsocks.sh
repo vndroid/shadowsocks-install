@@ -443,28 +443,28 @@ fi
 case "$OSVER" in
     wheezy|precise|trusty)
         clear
-	    echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
+	echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
         echo "Not supported Debian 7 / Ubuntu 14 or older version, please update and try again."
         exit 1
         ;;
     unstable|sid)
-	    # Debian unstable
+	# Debian unstable
         clear
         echo -e "${WARNING} We strongly encourage you to use stable system."
         exit 1
-	    ;;
+	;;
     jessie)
-	    # Debian 8.0 jessie
+	# Debian 8.0 jessie
         INSTALL_MARK=1
-	    ;;
+	;;
     stretch)
         # Debian 9.0 stretch
         INSTALL_MARK=1
         ;;
     xenial)
-	    # Ubuntu 16.04 xenial
+	# Ubuntu 16.04 xenial
         INSTALL_MARK=1
-	    ;;
+	;;
     yakkety)
         # Ubuntu 16.10 yakkety
         INSTALL_MARK=1
