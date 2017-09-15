@@ -38,6 +38,7 @@ PLAIN="\033[0m"
 # Info messages
 DONE="${GREEN}[DONE]${PLAIN}"
 FAIL="${RED}[FAIL]${PLAIN}"
+ERROR="${RED}[ERROR]${PLAIN}"
 WARNING="${YELLOW}[WARNING]${PLAIN}"
 RUNNING="${BLUE}[RUNNING]${PLAIN}"
 
@@ -71,6 +72,8 @@ do_start()
         RETVAL=$?
         if [ $RETVAL -eq 0 ]; then
             echo -e "${DONE}"
+            TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
+            echo $TEMP_ACTTIME > /var/log/ss-time.log
         else
             echo -e "${FAIL}"
         fi
@@ -85,6 +88,8 @@ do_stop()
         RETVAL=$?
         if [ $RETVAL -eq 0 ]; then
             echo -e "${DONE}"
+            TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
+            echo $TEMP_ACTTIME > /var/log/ss-time.log
         else
             echo -e "${FAIL}"
         fi
@@ -94,32 +99,42 @@ do_stop()
     fi
 }
 
-do_restart()
-{
-    # Smoothly restart
-    do_stop
-    sleep 3
-    do_start
-}
-
 do_status()
 {
     check_running
     if [ $? -eq 0 ]; then
-        echo -e "${RUNNING} $NAME (PID: ${BLUE}$PID${PLAIN}) is running..."
+        local TEMP_RUNTIME=$(ps -eo pid,etime | grep $PID | awk  '{print $2}')
+        echo -e "${GREEN}●${PLAIN} shadowsocks.service - Shadowsocks Default Server Service"
+        echo -e "   Loaded: loaded (/etc/init.d/shadowsocks; enabled; vendor preset: enabled)"
+        echo -e "   Active: ${GREEN}active (running)${PLAIN} since $TEMP_ACTTIME; $TEMP_RUNTIME ago"
+        echo -e "     Docs: man:shadowsocks(8)"
+        echo -e " Main PID: ${BLUE}$PID${PLAIN} (ss-server)"
+        echo -e "    Tasks: 1 (limit: 4915)"
+        echo -e "   CGroup: /system.slice/shadowsocks.service"
+        echo -e "           └─ $BIN -c $CONF -d "
     else
-        echo -e "${WARNING} $NAME is ${RED}NOT${PLAIN} running."
+        local TEMP_ACTTIME=$(/var/log/ss-time.log)
+        echo -e "${RED}●${PLAIN} shadowsocks.service - Shadowsocks Default Server Service"
+        echo -e "   Loaded: loaded (/etc/init.d/shadowsocks; enabled; vendor preset: enabled)"
+        echo -e "   Active: ${RED}inactive (dead)${PLAIN} since $TEMP_ACTTIME"
+        echo -e "     Docs: man:shadowsocks(8)"
+        echo -e " Main PID: None (code=exited, status=0/SUCCESS)"
         RETVAL=1
     fi
 }
 
 case "$1" in
-    start|stop|restart|status)
-    do_$1
+    start|stop|status)
+        do_$1
+    ;;
+    reload|restart|force-reload)
+        do_stop
+        sleep 3
+        do_start
     ;;
     *)
-    echo "Usage: $0 { start | stop | restart | status }"
-    RETVAL=1
+        echo "Usage: $0 {start|stop|reload|status}"
+        RETVAL=1
     ;;
 esac
 
