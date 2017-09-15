@@ -103,6 +103,7 @@ do_status()
 {
     check_running
     if [ $? -eq 0 ]; then
+        local TEMP_ACTTIME=$(/var/log/ss-time.log)
         local TEMP_RUNTIME=$(ps -eo pid,etime | grep $PID | awk  '{print $2}')
         echo -e "${GREEN}●${PLAIN} shadowsocks.service - Shadowsocks Default Server Service"
         echo -e "   Loaded: loaded (/etc/init.d/shadowsocks; enabled; vendor preset: enabled)"
