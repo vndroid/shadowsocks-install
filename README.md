@@ -1,4 +1,4 @@
-# shadowsocks-python server install
+# shadowsocks server install
 ## Summary
 ### shadowsocks-python install script for Debian / Ubuntu
 ## Support: 
