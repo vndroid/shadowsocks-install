@@ -5,7 +5,7 @@
 - Add init.d File judgment
 
 1.0(10) 2017-09-01
-- Add shadowsocks-libev init and install bash
+- Add more Encrypt Method
 
 1.0(09) 2017-08-19
 - Fix Linux version detection bug
