@@ -486,7 +486,7 @@ echo -e "#############################################################"
 case "$1" in
     install)
         rootness
-        if [ $INSTALL_MARK=1 -eq 1 ]; then
+        if [ $INSTALL_MARK -eq 1 ]; then
             $1_shadowsocks
         fi
         ;;
