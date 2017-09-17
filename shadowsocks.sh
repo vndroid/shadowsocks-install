@@ -1,13 +1,12 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(2)
-# Date:        2017/09/15
+# Revision:    2.0(3)
+# Date:        2017/09/17
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
 # Description: shadowsocks python server install for Debian / Ubuntu
-# Notes:       run "./shadowsocks.sh install 2>&1 | tee shadowsocks.log"
 # -------------------------------------------------------------------------------
 # Copyright:   2017 (c) Wave WorkShop
 # License:     GPL
@@ -61,7 +60,7 @@ cur_dir=`pwd`
 # Make sure only root can run our script
 rootness(){
     if [[ $EUID -ne 0 ]]; then
-        echo -e "${WARNING} must be run as root user." 1>&2
+        echo -e "${WARNING} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
         exit 1
     fi
 }
@@ -84,11 +83,12 @@ get_char(){
     stty $SAVEDSTTY
 }
 
-# Prepare installation
+# Configure shadowsocks setting
 first_set_config(){
     # Set shadowsocks config password
     echo "Please input password for shadowsocks:"
-    read -p "(Default: material):" shadowsocks_passwd
+    echo "default: material"
+    read shadowsocks_passwd
     [ -z "${shadowsocks_passwd}" ] && shadowsocks_passwd="material"
     echo
     echo "---------------------------"
@@ -102,69 +102,70 @@ first_set_config(){
     echo "3. aes-192-cfb              12. camellia-256-cfb"
     echo "4. aes-256-cfb              13. aes-128-gcm"
     echo "5. aes-128-ctr              14. aes-192-gcm"
-    echo "6. aes-192-ctr              15. aes-256-gcm(recommend)"
-    echo "7. aes-256-ctr              16. sodium:aes-256-gcm"
+    echo "6. aes-192-ctr              15. aes-256-gcm"
+    echo "7. aes-256-ctr              16. sodium:aes-256-gcm (recommend)"
     echo "8. chacha20                 17. chacha20-ietf-poly1305"
     echo "9. chacha20-ietf            18. xchacha20-ietf-poly1305"
-    read -p "(Default: aes-128-gcm):" number
+    echo "default: sodium:aes-256-gcm"
+    read number
     case "$number" in
-      1)
-        shadowsocks_method="rc4-md5"
-        ;;
-      2)
-        shadowsocks_method="aes-128-cfb"
-        ;;
-      3)
-        shadowsocks_method="aes-192-cfb"
-        ;;
-      4)
-        shadowsocks_method="aes-256-cfb"
-        ;;
-      5)
-        shadowsocks_method="aes-128-ctr"
-        ;;
-      6)
-        shadowsocks_method="aes-192-ctr"
-        ;;
-      7)
-        shadowsocks_method="aes-256-ctr"
-        ;;
-      8)
-        shadowsocks_method="chacha20"
-        ;;
-      9)
-        shadowsocks_method="chacha20-ietf"
-        ;;
-      10)
-        shadowsocks_method="camellia-128-cfb"
-        ;;
-      11)
-        shadowsocks_method="camellia-192-cfb"
-        ;;
-      12)
-        shadowsocks_method="camellia-256-cfb"
-        ;;
-      13)
-        shadowsocks_method="aes-128-gcm"
-        ;;
-      14)
-        shadowsocks_method="aes-192-gcm"
-        ;;
-      15)
-        shadowsocks_method="aes-256-gcm"
-        ;;
-      16)
-        shadowsocks_method="sodium:aes-256-gcm"
-        ;;
-      17)
-        shadowsocks_method="chacha20-ietf-poly1305"
-        ;;
-      18)
-        shadowsocks_method="xchacha20-ietf-poly1305"
-        ;;
-      *)
-        shadowsocks_method="aes-128-gcm"
-        ;;
+        1)
+            shadowsocks_method="rc4-md5"
+            ;;
+        2)
+            shadowsocks_method="aes-128-cfb"
+            ;;
+        3)
+            shadowsocks_method="aes-192-cfb"
+            ;;
+        4)
+            shadowsocks_method="aes-256-cfb"
+            ;;
+        5)
+            shadowsocks_method="aes-128-ctr"
+            ;;
+        6)
+            shadowsocks_method="aes-192-ctr"
+            ;;
+        7)
+            shadowsocks_method="aes-256-ctr"
+            ;;
+        8)
+            shadowsocks_method="chacha20"
+            ;;
+        9)
+            shadowsocks_method="chacha20-ietf"
+            ;;
+        10)
+            shadowsocks_method="camellia-128-cfb"
+            ;;
+        11)
+            shadowsocks_method="camellia-192-cfb"
+            ;;
+        12)
+            shadowsocks_method="camellia-256-cfb"
+            ;;
+        13)
+            shadowsocks_method="aes-128-gcm"
+            ;;
+        14)
+            shadowsocks_method="aes-192-gcm"
+            ;;
+        15)
+            shadowsocks_method="aes-256-gcm"
+            ;;
+        16)
+            shadowsocks_method="sodium:aes-256-gcm"
+            ;;
+        17)
+            shadowsocks_method="chacha20-ietf-poly1305"
+            ;;
+        18)
+            shadowsocks_method="xchacha20-ietf-poly1305"
+            ;;
+        *)
+            shadowsocks_method="sodium:aes-256-gcm"
+            ;;
     esac
     echo
     echo "---------------------------"
@@ -174,8 +175,9 @@ first_set_config(){
     # Set shadowsocks config port
     while true
     do
-    echo -e "Please input port for shadowsocks [1-65535]:"
-    read -p "(Default: 8388):" shadowsocks_port
+    echo "Please input port for shadowsocks [1-65535]:"
+    echo "default: 8388"
+    read shadowsocks_port
     [ -z "$shadowsocks_port" ] && shadowsocks_port="8388"
     expr ${shadowsocks_port} + 0 &>/dev/null
     if [ $? -eq 0 ]; then
@@ -194,24 +196,40 @@ first_set_config(){
     fi
     done
     # Set TCP Fast Open for shadowsocks
-    echo "Do you want to use TFO for shadowsocks? (y/n)"
-    read -p "(Default: n):" TFO
-    case "$TFO" in
-          Y|y)
-            shadowsocks_fastopen="true"
-            ;;
-          N|n)
-            shadowsocks_fastopen="false"
-            ;;
-          *)
-            shadowsocks_fastopen="false"
-            ;;
+    echo "Do you want to use TCP-FastOpen for shadowsocks? (y/n)"
+    echo "default: y"
+    read tfo
+    case "$tfo" in
+            Y|y)
+                shadowsocks_fastopen="true"
+                ;;
+            N|n)
+                shadowsocks_fastopen="false"
+                ;;
+            *)
+                shadowsocks_fastopen="true"
+                ;;
     esac
     echo
     echo "---------------------------"
     echo "fast_open = ${shadowsocks_fastopen}"
     echo "---------------------------"
     echo
+    # optimize kernel
+    echo "Do you want to optimize kernel for shadowsocks? (y/n)"
+    echo "default: y"
+    read opzcore
+    case "$opzcore" in
+            Y|y)
+                OPTIMIZE_MARK=1
+                ;;
+            N|n)
+                OPTIMIZE_MARK=0
+                ;;
+            *)
+                OPTIMIZE_MARK=1
+                ;;
+    esac
     # Prepare finish
     echo
     echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
@@ -249,8 +267,6 @@ third_write_config(){
 {
     "server":"0.0.0.0",
     "server_port":${shadowsocks_port},
-    "local_address":"127.0.0.1",
-    "local_port":1080,
     "password":"${shadowsocks_passwd}",
     "timeout":300,
     "method":"${shadowsocks_method}",
@@ -262,9 +278,9 @@ EOF
 # Install shadowsocks
 fourth_install(){
     # Install libsodium
-    tar zxf libsodium-latest.tar.gz
-    cd libsodium-1.*
-    ./configure && make && make install
+    tar zxvf libsodium-latest.tar.gz
+    pushd libsodium-1.*
+    ./configure --prefix=/usr && make && make install
     if [ $? -ne 0 ]; then
         echo "libsodium install failed!"
         fifth_cleanup
@@ -272,11 +288,12 @@ fourth_install(){
     fi
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
     ldconfig
+    popd
     # Install shadowsocks
     cd ${cur_dir}
     unzip -q shadowsocks-master.zip
     if [ $? -ne 0 ]; then
-        echo -e "${FAIL} unzip shadowsocks-master.zip failed! please check unzip command."
+        echo -e "${FAIL} unzip shadowsocks-master.zip failed!"
         fifth_cleanup
         exit 1
     fi
@@ -294,17 +311,15 @@ fourth_install(){
         fifth_cleanup
         exit 1
     fi
-    printf "shadowsocks server installing"
+    printf "shadowsocks server installing..."
     sleep 1
     clear
     echo
     echo -e "#-----------------------------------------------------#"
     echo -e "#         ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
-    echo -e "#    ${CYAN}Remote Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
-    echo -e "#     ${CYAN}Local Port${PLAIN}: ${RED} 1080 ${PLAIN}"
+    echo -e "#           ${CYAN}Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
     echo -e "#       ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
     echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} ${shadowsocks_method} ${PLAIN}"
-    echo -e "#-----------------------------------------------------#"
     echo -e "#   ${CYAN}TCP FastOpen${PLAIN}: ${RED} ${shadowsocks_fastopen} ${PLAIN}"
     echo -e "#-----------------------------------------------------#"
     echo
@@ -317,7 +332,7 @@ fifth_cleanup(){
 }
 
 # Optimize the shadowsocks server on Linux
-sixth_optimize_kernel(){
+optimize_kernel(){
     # First of all, make sure your Linux kernel is 3.5 or later please.
     local LIMVER=3.4
     # Step 1, increase the maximum number of open file descriptors
@@ -429,18 +444,18 @@ install_shadowsocks(){
     third_write_config
     fourth_install
     fifth_cleanup
-    sixth_optimize_kernel
 }
 
 # OS
-OSID=$(grep ^ID= /etc/os-release|cut -d= -f2)
+OSID=$(grep ^ID= /etc/os-release | cut -d= -f2)
 OSVER=$(lsb_release -cs)
 OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
 COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
+MEMKB=$(cat /proc/meminfo | grep MemTotal | awk -F':' '{print $2}' | grep -o '[0-9]\+')
 INSTALL_MARK=0
 
 # RedHat not support
-if [[ -s /etc/redhat-release ]]; then
+if [ -s /etc/redhat-release ]; then
     clear
     echo -e "${ERROR} RedHat and CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
     exit 1
@@ -448,30 +463,24 @@ fi
 
 # Debian & Ubuntu
 case "$OSVER" in
-    wheezy|precise|trusty)
-        clear
-	echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
-        echo "Not supported Debian 7 / Ubuntu 14 or older version, please update and try again."
-        exit 1
-        ;;
     unstable|sid)
-	# Debian unstable
+    	# Debian unstable
         clear
-        echo -e "${WARNING} We strongly encourage you to use stable system."
+        echo -e "${WARNING} We strongly encourage you to use stable release."
         exit 1
-	;;
+	    ;;
     jessie)
-	# Debian 8.0 jessie
+    	# Debian 8.0 jessie
         INSTALL_MARK=1
-	;;
+	    ;;
     stretch)
         # Debian 9.0 stretch
         INSTALL_MARK=1
         ;;
     xenial)
-	# Ubuntu 16.04 xenial
+	    # Ubuntu 16.04 xenial
         INSTALL_MARK=1
-	;;
+	    ;;
     yakkety)
         # Ubuntu 16.10 yakkety
         INSTALL_MARK=1
@@ -480,13 +489,17 @@ case "$OSVER" in
         # Ubuntu 17.04 zesty
         INSTALL_MARK=1
         ;;
+    *)
+        echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
+        exit 1
+        ;;
 esac
 
 echo -e "#############################################################"
-echo -e "#          OS:$OSID                                         #"
-echo -e "#  OS VERSION:$OSNUM                                        #"
-echo -e "#     OS CODE:$OSVER                                        #"
-echo -e "#     KERNEL :$COREVER                                      #"
+echo -e "#    ${RED}OS${PLAIN}: $OSID $OSNUM $OSVER                   "
+echo -e "#${RED}Kernel${PLAIN}: $(uname -m) Linux $(uname -r)"
+echo -e "#   ${RED}CPU${PLAIN}: $(grep 'model name' /proc/cpuinfo | uniq | awk -F : '{print $2}' | sed 's/^[ \t]*//g' | sed 's/ \+/ /g') "
+echo -e "#   ${RED}RAM${PLAIN}: $(cat /proc/meminfo | grep 'MemTotal' | awk -F : '{print $2}' | sed 's/^[ \t]*//g')                                       #"
 echo -e "#############################################################"
 echo
 
@@ -496,6 +509,9 @@ case "$1" in
         rootness
         if [ $INSTALL_MARK -eq 1 ]; then
             $1_shadowsocks
+        fi
+        if [ $OPTIMIZE_MARK -eq 1 ]; then
+            optimize_kernel
         fi
         ;;
     uninstall)
