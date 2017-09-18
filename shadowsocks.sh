@@ -496,10 +496,10 @@ case "$OSVER" in
 esac
 
 echo -e "#############################################################"
-echo -e "#    ${RED}OS${PLAIN}: $OSID $OSNUM $OSVER                   "
-echo -e "#${RED}Kernel${PLAIN}: $(uname -m) Linux $(uname -r)"
-echo -e "#   ${RED}CPU${PLAIN}: $(grep 'model name' /proc/cpuinfo | uniq | awk -F : '{print $2}' | sed 's/^[ \t]*//g' | sed 's/ \+/ /g') "
-echo -e "#   ${RED}RAM${PLAIN}: $(cat /proc/meminfo | grep 'MemTotal' | awk -F : '{print $2}' | sed 's/^[ \t]*//g')                                       #"
+echo -e "#       ${RED}OS${PLAIN}: $OSID $OSNUM $OSVER "
+echo -e "#   ${RED}Kernel${PLAIN}: $(uname -m) Linux $(uname -r)"
+echo -e "#      ${RED}CPU${PLAIN}: $(grep 'model name' /proc/cpuinfo | uniq | awk -F : '{print $2}' | sed 's/^[ \t]*//g' | sed 's/ \+/ /g') "
+echo -e "#      ${RED}RAM${PLAIN}: $(cat /proc/meminfo | grep 'MemTotal' | awk -F : '{print $2}' | sed 's/^[ \t]*//g') "
 echo -e "#############################################################"
 echo
 
