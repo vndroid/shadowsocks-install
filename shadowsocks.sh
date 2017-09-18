@@ -406,7 +406,7 @@ optimize_kernel(){
 
 # Uninstall Shadowsocks
 uninstall_shadowsocks(){
-    echo -e "${WARNING}Are you sure uninstall shadowsocks? (y/n) "
+    echo -e "${WARNING} Are you sure uninstall shadowsocks? (y/n) "
     read -p "(Default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
