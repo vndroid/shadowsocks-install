@@ -11,8 +11,6 @@ Current version: 2.0(03) | [Changelog](/change.log)
 
 ## Summary
 
-### shadowsocks-python install script for **Debian** / **Ubuntu**
-
 This script can compile and install for Linux server automatic by [@wavengine](https://github.com/wavengine)
 
 ## Features
@@ -21,12 +19,12 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 
 ## Support:
 
-* Debian 8 Jessie
-* Debian 9 Stretch
-* Ubuntu 14.04 Trusty
-* Ubuntu 16.04 Xenial
-* Ubuntu 16.10 Yakkety
-* Ubuntu 17.04 Zesty
+* >Debian 8 Jessie
+* >Debian 9 Stretch
+* >Ubuntu 14.04 Trusty
+* >Ubuntu 16.04 Xenial
+* >Ubuntu 16.10 Yakkety
+* >Ubuntu 17.04 Zesty
 
 ## How to use:
 
