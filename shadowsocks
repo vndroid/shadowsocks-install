@@ -73,7 +73,7 @@ do_start()
         if [ $RETVAL -eq 0 ]; then
             echo -e "${DONE}"
             TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
-            echo $TEMP_ACTTIME > /var/log/ss-time.log
+            echo $TEMP_ACTTIME > /var/log/shadowsocks.time
         else
             echo -e "${FAIL}"
         fi
@@ -89,7 +89,7 @@ do_stop()
         if [ $RETVAL -eq 0 ]; then
             echo -e "${DONE}"
             TEMP_ACTTIME=$(date "+%a %Y-%m-%d %H:%M:%S %Z")
-            echo $TEMP_ACTTIME > /var/log/ss-time.log
+            echo $TEMP_ACTTIME > /var/log/shadowsocks.time
         else
             echo -e "${FAIL}"
         fi
@@ -103,18 +103,18 @@ do_status()
 {
     check_running
     if [ $? -eq 0 ]; then
-        local TEMP_ACTTIME=$(cat /var/log/ss-time.log)
+        local TEMP_ACTTIME=$(cat /var/log/shadowsocks.time)
         local TEMP_RUNTIME=$(ps -eo pid,etime | grep $PID | awk  '{print $2}')
         echo -e "${GREEN}●${PLAIN} shadowsocks.service - Shadowsocks Default Server Service"
         echo -e "   Loaded: loaded (/etc/init.d/shadowsocks; enabled; vendor preset: enabled)"
         echo -e "   Active: ${GREEN}active (running)${PLAIN} since $TEMP_ACTTIME; $TEMP_RUNTIME ago"
         echo -e "     Docs: man:shadowsocks(8)"
-        echo -e " Main PID: ${BLUE}$PID${PLAIN} (ss-server)"
+        echo -e " Main PID: ${BLUE}$PID${PLAIN} (ssserver)"
         echo -e "    Tasks: 1 (limit: 4915)"
         echo -e "   CGroup: /system.slice/shadowsocks.service"
         echo -e "           └─ $BIN -c $CONF -d "
     else
-        local TEMP_ACTTIME=$(cat /var/log/ss-time.log)
+        local TEMP_ACTTIME=$(cat /var/log/shadowsocks.time)
         echo -e "${RED}●${PLAIN} shadowsocks.service - Shadowsocks Default Server Service"
         echo -e "   Loaded: loaded (/etc/init.d/shadowsocks; enabled; vendor preset: enabled)"
         echo -e "   Active: ${RED}inactive (dead)${PLAIN} since $TEMP_ACTTIME"
