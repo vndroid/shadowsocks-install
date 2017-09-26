@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(3)
-# Date:        2017/09/17
+# Revision:    2.0(4)
+# Date:        2017/09/27
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -245,7 +245,7 @@ first_set_config(){
 # Download files
 second_download_files(){
     # Download libsodium file
-    if ! wget --no-check-certificate -O libsodium-latest.tar.gz https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
+    if ! wget --no-check-certificate https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
         echo "Failed to download libsodium file!"
         exit 1
     fi
@@ -278,8 +278,8 @@ EOF
 # Install shadowsocks
 fourth_install(){
     # Install libsodium
-    tar zxvf libsodium-latest.tar.gz
-    pushd libsodium-1.*
+    tar zxvf LATEST.tar.gz
+    pushd libsodium-stable
     ./configure --prefix=/usr && make && make install
     if [ $? -ne 0 ]; then
         echo "libsodium install failed!"
