@@ -328,7 +328,7 @@ fourth_install(){
 # Cleanup install files
 fifth_cleanup(){
     cd ${cur_dir}
-    rm -rf shadowsocks-master.zip shadowsocks-master libsodium-latest.tar.gz libsodium-1.*
+    rm -rf shadowsocks-master.zip shadowsocks-master LATEST.tar.gz libsodium-stable
 }
 
 # Optimize the shadowsocks server on Linux
