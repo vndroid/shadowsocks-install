@@ -417,10 +417,15 @@ uninstall_shadowsocks(){
         # Remove system config
         update-rc.d -f shadowsocks remove
         # Restore system config
-        rm -f /etc/security/limits.conf
-        rm -f /etc/sysctl.conf
-        mv /etc/security/limits.conf.bak /etc/security/limits.conf
-        mv /etc/sysctl.conf.bak /etc/sysctl.conf
+        if [ -f /etc/security/limits.conf.bak ]; then
+            rm -f /etc/security/limits.conf
+            mv /etc/security/limits.conf.bak /etc/security/limits.conf
+            
+        fi
+        if [ -f /etc/sysctl.conf.bak ]; then
+            rm -f /etc/sysctl.conf
+            mv /etc/sysctl.conf.bak /etc/sysctl.conf
+        fi
         # Delete config file
         rm -f /etc/shadowsocks.json
         rm -f /var/run/shadowsocks.pid
