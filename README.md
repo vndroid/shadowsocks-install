@@ -7,8 +7,6 @@
 Current version: 2.0(06) | [Changelog](/change.log)
 
 
-> *Use shadowsocks-libev? Here is the link: [shadowsocks-libev](https://github.com/wavengine/shadowsocks-libev-install)*
-
 ## Summary
 
 This script can compile and install for Linux server automatic by [@wavengine](https://github.com/wavengine)
