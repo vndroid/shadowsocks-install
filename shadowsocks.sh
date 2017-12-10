@@ -169,7 +169,7 @@ first_set_config(){
     esac
     echo
     echo "---------------------------"
-    echo "encryption method = ${shadowsocks_method}"
+    echo "method = ${shadowsocks_method}"
     echo "---------------------------"
     echo
     # Set shadowsocks config port
@@ -230,6 +230,11 @@ first_set_config(){
                 OPTIMIZE_MARK=1
                 ;;
     esac
+    echo
+    echo "---------------------------"
+    echo "optimize = ${opzcore}"
+    echo "---------------------------"
+    echo
     # Prepare finish
     echo
     echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
@@ -237,7 +242,7 @@ first_set_config(){
     # Install necessary dependencies
     apt-get -y update
     apt-get -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
-    apt-get -y install screen bc sudo
+    apt-get -y install bc sudo
     # Return Home
     cd ${cur_dir}
 }
