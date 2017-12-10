@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(5)
-# Date:        2017/12/06
+# Revision:    2.0(6)
+# Date:        2017/12/10
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
