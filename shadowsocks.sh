@@ -1,14 +1,14 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(6)
-# Date:        2017/12/10
+# Revision:    2.0(7)
+# Date:        2018/05/10
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
 # Description: shadowsocks python server install for Debian / Ubuntu
 # -------------------------------------------------------------------------------
-# Copyright:   2017 (c) Wave WorkShop
+# Copyright:   2018 (c) Wave WorkShop
 # License:     GPL
 #
 # This program is free software; you can redistribute it and/or
@@ -37,6 +37,9 @@ echo "# Author: Wave WorkShop <waveworkshop@outlook.com>          #"
 echo "# Github: https://github.com/shadowsocks/shadowsocks        #"
 echo "#############################################################"
 echo
+
+# necessary depend
+apt-get -y install bc sudo lsb-release
 
 # Echo color
 RED="\033[31;1m"
@@ -242,7 +245,6 @@ first_set_config(){
     # Install necessary dependencies
     apt-get -y update
     apt-get -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
-    apt-get -y install bc sudo
     # Return Home
     cd ${cur_dir}
 }
