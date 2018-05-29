@@ -28,6 +28,8 @@
 # If any changes are made to this script, please mail me a copy of the changes
 # -------------------------------------------------------------------------------
 
+# necessary depend
+apt-get -y install bc sudo lsb-release
 clear
 echo
 echo "#############################################################"
@@ -38,8 +40,6 @@ echo "# Github: https://github.com/shadowsocks/shadowsocks        #"
 echo "#############################################################"
 echo
 
-# necessary depend
-apt-get -y install bc sudo lsb-release
 
 # Echo color
 RED="\033[31;1m"
