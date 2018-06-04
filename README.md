@@ -4,7 +4,7 @@
 
 [Shadowsocks](https://shadowsocks.org) is a secure SOCKS5 proxy, designed to protect your Internet traffic.
 
-Current version: 2.0(07) | [Changelog](/change.log)
+Current version: 2.0(08) | [Changelog](/change.log)
 
 
 ## Summary
@@ -23,6 +23,7 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 * Ubuntu 16.04 *Xenial*
 * Ubuntu 16.10 *Yakkety*
 * Ubuntu 17.04 *Zesty*
+* Ubuntu 18.04 *Bionic*
 
 ## How to use:
 
