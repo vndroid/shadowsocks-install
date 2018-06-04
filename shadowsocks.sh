@@ -1,8 +1,8 @@
 #!/bin/bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(7)
-# Date:        2018/05/10
+# Revision:    2.0(8)
+# Date:        2018/06/04
 # Author:      Kane
 # Email:       waveworkshop@outlook.com
 # Website:     www.wavengine.com
@@ -490,9 +490,9 @@ case "$OSVER" in
         INSTALL_MARK=1
         ;;
     xenial)
-	    # Ubuntu 16.04 xenial
+	# Ubuntu 16.04 xenial
         INSTALL_MARK=1
-	    ;;
+	;;
     yakkety)
         # Ubuntu 16.10 yakkety
         INSTALL_MARK=1
@@ -500,6 +500,10 @@ case "$OSVER" in
     zesty)
         # Ubuntu 17.04 zesty
         INSTALL_MARK=1
+        ;;
+    bionic)
+        # Ubuntu 17.10 bionic
+	INSTALL_MARK=1
         ;;
     *)
         echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
