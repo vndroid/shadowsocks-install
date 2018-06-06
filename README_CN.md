@@ -40,16 +40,16 @@ chmod +x shadowsocks.sh
 
 ### 配置并启动
 ```
-# Edit the configuration file
+# 修改配置文件
 vi /etc/shadowsocks.json
 
-# Start the service
+# 开启服务
 /etc/init.d/shadowsocks start
 
-# Stop the service
+# 停止服务
 /etc/init.d/shadowsocks stop
 
-# Check service status
+# 检查服务状态
 /etc/init.d/shadowsocks status
 ```
 
