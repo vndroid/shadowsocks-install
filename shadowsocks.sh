@@ -29,7 +29,7 @@
 # -------------------------------------------------------------------------------
 
 # necessary depend
-apt-get -y install bc sudo lsb-release
+apt -y install bc sudo lsb-release
 clear
 echo
 echo "#############################################################"
@@ -243,8 +243,8 @@ first_set_config(){
     echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
     char=`get_char`
     # Install necessary dependencies
-    apt-get -y update
-    apt-get -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
+    apt -y update
+    apt -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
     # Return Home
     cd ${cur_dir}
 }
@@ -490,20 +490,16 @@ case "$OSVER" in
         INSTALL_MARK=1
         ;;
     xenial)
-	# Ubuntu 16.04 xenial
+	    # Ubuntu 16.04 xenial
         INSTALL_MARK=1
-	;;
-    yakkety)
-        # Ubuntu 16.10 yakkety
-        INSTALL_MARK=1
-        ;;
+	    ;;
     zesty)
         # Ubuntu 17.04 zesty
         INSTALL_MARK=1
         ;;
     bionic)
-        # Ubuntu 17.10 bionic
-	INSTALL_MARK=1
+        # Ubuntu 18.04 bionic
+	    INSTALL_MARK=1
         ;;
     *)
         echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
