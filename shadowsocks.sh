@@ -87,7 +87,7 @@ get_char(){
 }
 
 # Configure shadowsocks setting
-first_set_config(){
+setup_profile(){
     # Set shadowsocks config password
     echo "Please input password for shadowsocks:"
     echo "default: material"
@@ -250,7 +250,7 @@ first_set_config(){
 }
 
 # Download files
-second_download_files(){
+prepare_files(){
     # Download libsodium file
     if ! wget --no-check-certificate https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
         echo "Failed to download libsodium file!"
@@ -269,7 +269,7 @@ second_download_files(){
 }
 
 # Write shadowsocks config
-third_write_config(){
+write_profile(){
     cat > /etc/shadowsocks.json<<-EOF
 {
     "server":"0.0.0.0",
@@ -283,14 +283,14 @@ EOF
 }
 
 # Install shadowsocks
-fourth_install(){
+start_install(){
     # Install libsodium
     tar zxvf LATEST.tar.gz
     pushd libsodium-stable
     ./configure --prefix=/usr && make && make install
     if [ $? -ne 0 ]; then
         echo "libsodium install failed!"
-        fifth_cleanup
+        cleanup
         exit 1
     fi
     echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
@@ -301,7 +301,7 @@ fourth_install(){
     unzip -q shadowsocks-master.zip
     if [ $? -ne 0 ]; then
         echo -e "${FAIL} unzip shadowsocks-master.zip failed!"
-        fifth_cleanup
+        cleanup
         exit 1
     fi
 
@@ -315,7 +315,7 @@ fourth_install(){
     else
         echo
         echo -e "${FAIL} shadowsocks install failed! please email waveworkshop@outlook.com to contact me."
-        fifth_cleanup
+        cleanup
         exit 1
     fi
     printf "shadowsocks server installing..."
@@ -333,87 +333,104 @@ fourth_install(){
 }
 
 # Cleanup install files
-fifth_cleanup(){
+cleanup(){
     cd ${cur_dir}
-    rm -rf shadowsocks-master.zip shadowsocks-master LATEST.tar.gz libsodium-stable
+    rm -rf shadowsocks-master.zip shadowsocks-master LATEST.tar.gz
 }
 
 # Optimize the shadowsocks server on Linux
 optimize_kernel(){
-    # First of all, make sure your Linux kernel is 3.5 or later please.
-    local LIMVER=3.4
-    # Step 1, increase the maximum number of open file descriptors
-    if [ `echo "$COREVER > $LIMVER" | bc` -eq 1 ]; then
-        # Backup default config
-        cp /etc/security/limits.conf /etc/security/limits.conf.bak
-        cp /etc/sysctl.conf /etc/sysctl.conf.bak
-        # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
-        echo "* soft nofile 51200" >> /etc/security/limits.conf
-        echo "* hard nofile 51200" >> /etc/security/limits.conf
+    # Step 1, First of all, make sure your Linux kernel is 3.5 or later please.
+    local LIMVER1=3
+    local LIMVER2=5
+    # Step 2, get kernel value
+    local COREVER1=$(echo $COREVER | awk -F '.' '{print $1}')
+    local COREVER2=$(echo $COREVER | awk -F '.' '{print $2}')
+    # Step 3, increase the maximum number of open file descriptors
+    if [ `echo "$COREVER1 >= $LIMVER1" | bc` -eq 1 ]; then
+        if [ `echo "$COREVER2 >= $LIMVER2" | bc` -eq 1 ]; then
+            # Backup default file
+            cp -a /etc/security/limits.conf /etc/security/limits.conf.bak
+            # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
+            echo "* soft nofile 51200" >> /etc/security/limits.conf
+            echo "* hard nofile 51200" >> /etc/security/limits.conf
+            # set the ulimit
+            ulimit -n 51200
+        else
+            exit 1
+        fi
+
     else
         exit 1
     fi
-    # To use BBR, make sure your Linux kernel is 4.9 or later please.
-    local TCP_BBR=4.8
-    # Step 2, Tune the kernel parameters
-    if [ `echo "$COREVER > $TCP_BBR" | bc` -eq 1 ]; then
-        # Use Google BBR
-        echo "fs.file-max = 51200" >> /etc/sysctl.conf
-        echo " " >> /etc/sysctl.conf
-        echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
-        echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
-        echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
-        echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
-        echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-        echo " " >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
-        echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+    # Step 4, To use BBR, make sure your Linux kernel is 4.9 or later please.
+    local TCP_BBR1=4
+    local TCP_BBR2=9
+    # Step 5, Tune the kernel parameters
+    if [ `echo "$COREVER1 >= $TCP_BBR1" | bc` -eq 1 ]; then
+        if [ `echo "$COREVER2 >= $TCP_BBR2" | bc` -eq 1 ]; then
+            # Backup default file
+            cp -a /etc/sysctl.conf /etc/sysctl.conf.bak
+            # Use Google BBR
+            echo "fs.file-max = 51200" >> /etc/sysctl.conf
+            echo " " >> /etc/sysctl.conf
+            echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
+            echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
+            echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
+            echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
+            echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+            echo " " >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
+            echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+        else
+            # The priciples of tuning parameters for shadowsocks are
+            # 1.Reuse ports and conections as soon as possible.
+            # 2.Enlarge the queues and buffers as large as possible.
+            # 3.Choose the TCP congestion algorithm for large latency and high throughput.
+            echo "fs.file-max = 51200" >> /etc/sysctl.conf
+            echo " " >> /etc/sysctl.conf
+            echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
+            echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
+            echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
+            echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
+            echo " " >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
+            echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
+            echo "net.ipv4.tcp_congestion_control = hybla" >> /etc/sysctl.conf
+        fi
+        # reload the config at runtime.
+        sysctl -p 1> /dev/null
     else
-        # The priciples of tuning parameters for shadowsocks are
-        # 1.Reuse ports and conections as soon as possible.
-        # 2.Enlarge the queues and buffers as large as possible.
-        # 3.Choose the TCP congestion algorithm for large latency and high throughput.
-        echo "fs.file-max = 51200" >> /etc/sysctl.conf
-        echo " " >> /etc/sysctl.conf
-        echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
-        echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
-        echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
-        echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
-        echo " " >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
-        echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
-        echo "net.ipv4.tcp_congestion_control = hybla" >> /etc/sysctl.conf
+        echo "The kernel is too old, cannot use BBR."
     fi
-    # reload the config at runtime.
-    sysctl -p 1> /dev/null
 }
 
 # Uninstall Shadowsocks
 uninstall_shadowsocks(){
-    echo -e "${WARNING} Are you sure uninstall shadowsocks? (y/n) "
+    echo -e "${WARNING} Are you sure uninstall shadowsocks and libsodium? (y/n) "
     read -p "(Default: n):" answer
     [ -z ${answer} ] && answer="n"
     if [ "${answer}" == "y" ] || [ "${answer}" == "Y" ]; then
@@ -441,6 +458,13 @@ uninstall_shadowsocks(){
         if [ -f /usr/local/shadowsocks_install.log ]; then
             cat /usr/local/shadowsocks_install.log | xargs rm -rf
         fi
+        # Uninstall libsodium
+        if [ -d libsodium-stable ]; then
+            cd libsodium-stable
+            make && make uninstall
+        else
+            echo "can not uninstall libsodium."
+        fi
         echo "shadowsocks uninstall success! "
     else
         echo
@@ -451,11 +475,11 @@ uninstall_shadowsocks(){
 
 # Install main function
 install_shadowsocks(){
-    first_set_config
-    second_download_files
-    third_write_config
-    fourth_install
-    fifth_cleanup
+    setup_profile
+    prepare_files
+    write_profile
+    start_install
+    cleanup
 }
 
 # OS
