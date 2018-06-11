@@ -1,14 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # -------------------------------------------------------------------------------
 # Filename:    shadowsocks.sh
-# Revision:    2.0(8)
-# Date:        2018/06/04
-# Author:      Kane
-# Email:       waveworkshop@outlook.com
-# Website:     www.wavengine.com
+# Revision:    3.0(1)
+# Date:        2018/06/11
 # Description: shadowsocks python server install for Debian / Ubuntu
 # -------------------------------------------------------------------------------
-# Copyright:   2018 (c) Wave WorkShop
+# Copyright:   2018 (c) Wave WorkShop <waveworkshop@outlook.com>
 # License:     GPL
 #
 # This program is free software; you can redistribute it and/or
@@ -28,8 +25,8 @@
 # If any changes are made to this script, please mail me a copy of the changes
 # -------------------------------------------------------------------------------
 
-# necessary depend
-apt -y install bc sudo lsb-release
+# necessary depend μ
+apt -y install bc lsb-release
 clear
 echo
 echo "#############################################################"
@@ -60,7 +57,7 @@ CANCEL="${CYAN}[CANCEL]${PLAIN}"
 # Current folder
 cur_dir=`pwd`
 
-# Make sure only root can run our script
+# Make sure root user
 rootness(){
     if [[ $EUID -ne 0 ]]; then
         echo -e "${WARNING} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
@@ -199,7 +196,7 @@ setup_profile(){
     fi
     done
     # Set TCP Fast Open for shadowsocks
-    echo "Do you want to use TCP-FastOpen for shadowsocks? (y/n)"
+    echo "Do you want to enable TCP-FastOpen for shadowsocks? (y/n)"
     echo "default: y"
     read tfo
     case "$tfo" in
@@ -218,26 +215,6 @@ setup_profile(){
     echo "fast_open = ${shadowsocks_fastopen}"
     echo "---------------------------"
     echo
-    # optimize kernel
-    echo "Do you want to optimize kernel for shadowsocks? (y/n)"
-    echo "default: y"
-    read opzcore
-    case "$opzcore" in
-            Y|y)
-                OPTIMIZE_MARK=1
-                ;;
-            N|n)
-                OPTIMIZE_MARK=0
-                ;;
-            *)
-                OPTIMIZE_MARK=1
-                ;;
-    esac
-    echo
-    echo "---------------------------"
-    echo "optimize = ${opzcore}"
-    echo "---------------------------"
-    echo
     # Prepare finish
     echo
     echo -e "Press any key to start...or Press ${RED}Ctrl+C${PLAIN} to cancel"
@@ -251,20 +228,21 @@ setup_profile(){
 
 # Download files
 prepare_files(){
-    # Download libsodium file
-    if ! wget --no-check-certificate https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
-        echo "Failed to download libsodium file!"
-        exit 1
+    # Download file
+    if [ ! -f LATEST.tar.gz ]; then
+        if ! wget --no-check-certificate https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
+            echo "Failed to download libsodium file!"
+        fi
     fi
-    # Download Shadowsocks file
-    if ! wget --no-check-certificate -O shadowsocks-master.zip https://github.com/shadowsocks/shadowsocks/archive/master.zip; then
-        echo "Failed to download shadowsocks python file!"
-        exit 1
+    if [ ! -f master.zip ]; then
+        if ! wget --no-check-certificate https://github.com/shadowsocks/shadowsocks/archive/master.zip; then
+            echo "Failed to download shadowsocks python file!"
+        fi
     fi
-    # Download Shadowsocks init script
-    if ! wget --no-check-certificate https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks -O /etc/init.d/shadowsocks; then
-        echo "Failed to download shadowsocks chkconfig file!"
-        exit 1
+    if [ ! -f /etc/init.d/shadowsocks ]; then
+        if ! wget --no-check-certificate https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks -O /etc/init.d/shadowsocks; then
+            echo "Failed to download shadowsocks daemon file!"
+        fi
     fi
 }
 
@@ -282,25 +260,24 @@ write_profile(){
 EOF
 }
 
-# Install shadowsocks
-start_install(){
+# Compile shadowsocks
+compile_install(){
     # Install libsodium
     tar zxvf LATEST.tar.gz
     pushd libsodium-stable
-    ./configure --prefix=/usr && make && make install
+    ./configure && make -j2 && make install
     if [ $? -ne 0 ]; then
-        echo "libsodium install failed!"
+        echo -e "${FAIL}libsodium install failed!"
         cleanup
         exit 1
     fi
-    echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
     ldconfig
     popd
     # Install shadowsocks
     cd ${cur_dir}
-    unzip -q shadowsocks-master.zip
+    unzip -q master.zip
     if [ $? -ne 0 ]; then
-        echo -e "${FAIL} unzip shadowsocks-master.zip failed!"
+        echo -e "${FAIL} unzip master.zip failed!"
         cleanup
         exit 1
     fi
@@ -313,8 +290,7 @@ start_install(){
         update-rc.d -f shadowsocks defaults
         /etc/init.d/shadowsocks start
     else
-        echo
-        echo -e "${FAIL} shadowsocks install failed! please email waveworkshop@outlook.com to contact me."
+        echo -e "${FAIL} shadowsocks install failed! please email error log to ${RED}waveworkshop@outlook.com${PLAIN}."
         cleanup
         exit 1
     fi
@@ -324,10 +300,10 @@ start_install(){
     echo
     echo -e "#-----------------------------------------------------#"
     echo -e "#         ${CYAN}Server${PLAIN}: ${RED} $(get_ip) ${PLAIN}"
-    echo -e "#           ${CYAN}Port${PLAIN}: ${RED} ${shadowsocks_port} ${PLAIN}"
-    echo -e "#       ${CYAN}Password${PLAIN}: ${RED} ${shadowsocks_passwd} ${PLAIN}"
-    echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} ${shadowsocks_method} ${PLAIN}"
-    echo -e "#   ${CYAN}TCP FastOpen${PLAIN}: ${RED} ${shadowsocks_fastopen} ${PLAIN}"
+    echo -e "#           ${CYAN}Port${PLAIN}: ${RED} $shadowsocks_port ${PLAIN}"
+    echo -e "#       ${CYAN}Password${PLAIN}: ${RED} $shadowsocks_passwd ${PLAIN}"
+    echo -e "# ${CYAN}Encrypt Method${PLAIN}: ${RED} $shadowsocks_method ${PLAIN}"
+    echo -e "#   ${CYAN}TCP FastOpen${PLAIN}: ${RED} $shadowsocks_fastopen ${PLAIN}"
     echo -e "#-----------------------------------------------------#"
     echo
 }
@@ -335,15 +311,15 @@ start_install(){
 # Cleanup install files
 cleanup(){
     cd ${cur_dir}
-    rm -rf shadowsocks-master.zip shadowsocks-master LATEST.tar.gz
+    rm -rf master.zip shadowsocks-master LATEST.tar.gz
 }
 
 # Optimize the shadowsocks server on Linux
-optimize_kernel(){
+optimize_shadowsocks(){
     # Step 1, First of all, make sure your Linux kernel is 3.5 or later please.
     local LIMVER1=3
     local LIMVER2=5
-    # Step 2, get kernel value
+    # Step 2, Extract kernel value
     local COREVER1=$(echo $COREVER | awk -F '.' '{print $1}')
     local COREVER2=$(echo $COREVER | awk -F '.' '{print $2}')
     # Step 3, increase the maximum number of open file descriptors
@@ -351,15 +327,13 @@ optimize_kernel(){
         if [ `echo "$COREVER2 >= $LIMVER2" | bc` -eq 1 ]; then
             # Backup default file
             cp -a /etc/security/limits.conf /etc/security/limits.conf.bak
-            # To handle thousands of concurrent TCP connections, we should increase the limit of file descriptors opened.
-            echo "* soft nofile 51200" >> /etc/security/limits.conf
-            echo "* hard nofile 51200" >> /etc/security/limits.conf
-            # set the ulimit
+            # To handle thousands of current TCP connections, we should increase the limit of file descriptors opened.
+            echo -e "* soft nofile 51200 \n* hard nofile 51200" >> /etc/security/limits.conf
+            # Set the ulimit
             ulimit -n 51200
         else
-            exit 1
+            echo "Linux kernel not support"
         fi
-
     else
         exit 1
     fi
@@ -372,59 +346,63 @@ optimize_kernel(){
             # Backup default file
             cp -a /etc/sysctl.conf /etc/sysctl.conf.bak
             # Use Google BBR
-            echo "fs.file-max = 51200" >> /etc/sysctl.conf
-            echo " " >> /etc/sysctl.conf
-            echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
-            echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
-            echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
-            echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
-            echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-            echo " " >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
-            echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+            cat >> /etc/sysctl.conf <<EOF
+fs.file-max = 51200
+            
+net.core.rmem_max = 67108864
+net.core.wmem_max = 67108864
+net.core.netdev_max_backlog = 250000
+net.core.somaxconn = 4096
+net.core.default_qdisc = fq
+            
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_tw_recycle = 0
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_keepalive_time = 1200
+net.ipv4.ip_local_port_range = 10000 65000
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_mem = 25600 51200 102400
+net.ipv4.tcp_rmem = 4096 87380 67108864
+net.ipv4.tcp_wmem = 4096 65536 67108864
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_congestion_control = bbr
+EOF
         else
             # The priciples of tuning parameters for shadowsocks are
             # 1.Reuse ports and conections as soon as possible.
             # 2.Enlarge the queues and buffers as large as possible.
             # 3.Choose the TCP congestion algorithm for large latency and high throughput.
-            echo "fs.file-max = 51200" >> /etc/sysctl.conf
-            echo " " >> /etc/sysctl.conf
-            echo "net.core.rmem_max = 67108864" >> /etc/sysctl.conf
-            echo "net.core.wmem_max = 67108864" >> /etc/sysctl.conf
-            echo "net.core.netdev_max_backlog = 250000" >> /etc/sysctl.conf
-            echo "net.core.somaxconn = 4096" >> /etc/sysctl.conf
-            echo " " >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_syncookies = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_tw_reuse = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_tw_recycle = 0" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_fin_timeout = 30" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_keepalive_time = 1200" >> /etc/sysctl.conf
-            echo "net.ipv4.ip_local_port_range = 10000 65000" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_max_syn_backlog = 8192" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_max_tw_buckets = 5000" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_fastopen = 3" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_mem = 25600 51200 102400" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_rmem = 4096 87380 67108864" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_wmem = 4096 65536 67108864" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
-            echo "net.ipv4.tcp_congestion_control = hybla" >> /etc/sysctl.conf
+            cat >> /etc/sysctl.conf <<EOF
+fs.file-max = 51200
+
+net.core.rmem_max = 67108864
+net.core.wmem_max = 67108864
+net.core.netdev_max_backlog = 250000
+net.core.somaxconn = 4096
+
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_tw_recycle = 0
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_keepalive_time = 1200
+net.ipv4.ip_local_port_range = 10000 65000
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_mem = 25600 51200 102400
+net.ipv4.tcp_rmem = 4096 87380 67108864
+net.ipv4.tcp_wmem = 4096 65536 67108864
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_congestion_control = hybla
+EOF
         fi
         # reload the config at runtime.
         sysctl -p 1> /dev/null
     else
-        echo "The kernel is too old, cannot use BBR."
+        echo "The kernel ($COREVER1.$COREVER2)is too old, can not use BBR. Use hybla " # 待处理 （算法）
     fi
 }
 
@@ -438,19 +416,18 @@ uninstall_shadowsocks(){
         if [ $? -eq 0 ]; then
             /etc/init.d/shadowsocks stop
         fi
-        # Remove system config
+        # Remove daemon
         update-rc.d -f shadowsocks remove
         # Restore system config
         if [ -f /etc/security/limits.conf.bak ]; then
             rm -f /etc/security/limits.conf
             mv /etc/security/limits.conf.bak /etc/security/limits.conf
-            
         fi
         if [ -f /etc/sysctl.conf.bak ]; then
             rm -f /etc/sysctl.conf
             mv /etc/sysctl.conf.bak /etc/sysctl.conf
         fi
-        # Delete config file
+        # Delete config file and log file
         rm -f /etc/shadowsocks.json
         rm -f /var/run/shadowsocks.pid
         rm -f /etc/init.d/shadowsocks
@@ -458,18 +435,16 @@ uninstall_shadowsocks(){
         if [ -f /usr/local/shadowsocks_install.log ]; then
             cat /usr/local/shadowsocks_install.log | xargs rm -rf
         fi
-        # Uninstall libsodium
+        # Uninstall libsodium(can case other issues)
         if [ -d libsodium-stable ]; then
             cd libsodium-stable
             make && make uninstall
         else
-            echo "can not uninstall libsodium."
+            echo "no directory. can not uninstall libsodium."
         fi
         echo "shadowsocks uninstall success! "
     else
-        echo
         echo -e "${CANCEL}Cancelled, nothing to do. "
-        echo
     fi
 }
 
@@ -546,9 +521,7 @@ case "$1" in
         if [ $INSTALL_MARK -eq 1 ]; then
             $1_shadowsocks
         fi
-        if [ $OPTIMIZE_MARK -eq 1 ]; then
-            optimize_kernel
-        fi
+        optimize_shadowsocks
         ;;
     uninstall)
         rootness

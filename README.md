@@ -4,7 +4,7 @@
 
 [Shadowsocks](https://shadowsocks.org) is a secure SOCKS5 proxy, designed to protect your Internet traffic.
 
-Current version: 2.0(08) | [Changelog](/change.log)
+Current version: 3.0(01) | [Changelog](/change.log)
 Current lauguage: English | [Simplified Chinese](/README_CN.md)
 
 
