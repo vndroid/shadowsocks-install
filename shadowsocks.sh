@@ -463,6 +463,8 @@ OSVER=$(lsb_release -cs)
 OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
 COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
 MEMKB=$(cat /proc/meminfo | grep MemTotal | awk -F':' '{print $2}' | grep -o '[0-9]\+')
+MEMMB=$(expr $MEMKB / 1024)
+MEMGB=$(expr $MEMMB / 1024)
 INSTALL_MARK=0
 
 # RedHat not support
