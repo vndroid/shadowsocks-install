@@ -53,6 +53,9 @@ vi /etc/shadowsocks.json
 
 # Check service status
 /etc/init.d/shadowsocks status
+
+# View the log
+tail -f /var/log/shadowsocks.log
 ```
 
 ## Report issues

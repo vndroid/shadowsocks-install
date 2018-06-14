@@ -51,6 +51,9 @@ vi /etc/shadowsocks.json
 
 # 检查服务状态
 /etc/init.d/shadowsocks status
+
+# 查看日志
+tail -f /var/log/shadowsocks.log
 ```
 
 ## 问题反馈
