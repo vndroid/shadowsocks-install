@@ -1,32 +1,25 @@
 #!/usr/bin/env bash
-# -------------------------------------------------------------------------------
-# Filename:    shadowsocks.sh
-# Revision:    3.0(1)
-# Date:        2018/06/11
-# Description: shadowsocks python server install for Debian / Ubuntu
-# -------------------------------------------------------------------------------
-# Copyright:   2018 (c) Wave WorkShop <waveworkshop@outlook.com>
-# License:     GPL
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty
-# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# you should have received a copy of the GNU General Public License
-# along with this program (or with Nagios);
-#
-# Credits go to Ethan Galstad for coding Nagios
-# If any changes are made to this script, please mail me a copy of the changes
-# -------------------------------------------------------------------------------
 
-# necessary depend μ
-apt -y install bc lsb-release
+# shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu
+
+# Copyright (c) 2016-2018 Wave WorkShop <waveworkshop@outlook.com>
+
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+scriptVersion="3.0.2"
+scriptDate="20180626"
+
 clear
 echo
 echo "#############################################################"
@@ -37,8 +30,7 @@ echo "# Github: https://github.com/shadowsocks/shadowsocks        #"
 echo "#############################################################"
 echo
 
-
-# Echo color
+# Set color
 RED="\033[31;1m"
 GREEN="\033[32;1m"
 YELLOW="\033[33;1m"
@@ -54,11 +46,15 @@ ERROR="${RED}[ERROR]${PLAIN}"
 WARNING="${YELLOW}[WARNING]${PLAIN}"
 CANCEL="${CYAN}[CANCEL]${PLAIN}"
 
+# Font Format
+BOLD="\033[1m"
+UNDERLINE="\033[4m"
+
 # Current folder
 cur_dir=`pwd`
 
 # Make sure root user
-rootness(){
+rootNess(){
     if [[ $EUID -ne 0 ]]; then
         echo -e "${WARNING} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
         exit 1
@@ -84,7 +80,7 @@ get_char(){
 }
 
 # Configure shadowsocks setting
-setup_profile(){
+setupProfile(){
     # Set shadowsocks config password
     echo "Please input password for shadowsocks:"
     echo "default: material"
@@ -227,7 +223,7 @@ setup_profile(){
 }
 
 # Download files
-prepare_files(){
+downloadFiles(){
     # Download file
     if [ ! -f LATEST.tar.gz ]; then
         if ! wget --no-check-certificate https://download.libsodium.org/libsodium/releases/LATEST.tar.gz; then
@@ -247,7 +243,7 @@ prepare_files(){
 }
 
 # Write shadowsocks config
-write_profile(){
+writeProfile(){
     cat > /etc/shadowsocks.json<<-EOF
 {
     "server":"0.0.0.0",
@@ -268,7 +264,7 @@ compile_install(){
     ./configure && make -j2 && make install
     if [ $? -ne 0 ]; then
         echo -e "${FAIL}libsodium install failed!"
-        cleanup
+        cleanUp
         exit 1
     fi
     ldconfig
@@ -278,7 +274,7 @@ compile_install(){
     unzip -q master.zip
     if [ $? -ne 0 ]; then
         echo -e "${FAIL} unzip master.zip failed!"
-        cleanup
+        cleanUp
         exit 1
     fi
 
@@ -291,7 +287,7 @@ compile_install(){
         /etc/init.d/shadowsocks start
     else
         echo -e "${FAIL} shadowsocks install failed! please email error log to ${RED}waveworkshop@outlook.com${PLAIN}."
-        cleanup
+        cleanUp
         exit 1
     fi
     printf "shadowsocks server installing..."
@@ -309,13 +305,13 @@ compile_install(){
 }
 
 # Cleanup install files
-cleanup(){
+cleanUp(){
     cd ${cur_dir}
     rm -rf master.zip shadowsocks-master LATEST.tar.gz
 }
 
 # Optimize the shadowsocks server on Linux
-optimize_shadowsocks(){
+optimizeShadowsocks(){
     # Step 1, First of all, make sure your Linux kernel is 3.5 or later please.
     local LIMVER1=3
     local LIMVER2=5
@@ -402,12 +398,30 @@ EOF
         # reload the config at runtime.
         sysctl -p 1> /dev/null
     else
-        echo "The kernel ($COREVER1.$COREVER2)is too old, can not use BBR. Use hybla " # 待处理 （算法）
+        echo "The kernel ($COREVER1.$COREVER2)is too old, can not use BBR. Use hybla "
     fi
 }
 
+# Display Help info
+displayHelp(){
+	echo "${UNDERLINE}Usage${PLAIN}:"
+	echo "  $0 [OPTIONAL FLAGS]"
+	echo
+	echo "shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu."
+	echo
+	echo "${UNDERLINE}Options${PLAIN}:"
+    echo "   ${BOLD}-i, --install${PLAIN}      Install shadowsocks."
+    echo "   ${BOLD}-u, --uninstall${PLAIN}    Uninstall shadowsocks."
+	echo "   ${BOLD}-v, --version${PLAIN}      Display current script version."
+	echo "   ${BOLD}-h, --help${PLAIN}         Display this help."
+    echo
+    echo "${UNDERLINE}shadowsocks.sh${PLAIN} - Version ${scriptVersion} "
+    echo "Modify Date ${scriptDate}"
+	echo "Created by and licensed to WaveWorkShop <waveworkshop@outlook.com>"
+}
+
 # Uninstall Shadowsocks
-uninstall_shadowsocks(){
+uninstallShadowsocks(){
     echo -e "${WARNING} Are you sure uninstall shadowsocks and libsodium? (y/n) "
     read -p "(Default: n):" answer
     [ -z ${answer} ] && answer="n"
@@ -449,13 +463,34 @@ uninstall_shadowsocks(){
 }
 
 # Install main function
-install_shadowsocks(){
-    setup_profile
-    prepare_files
-    write_profile
-    start_install
-    cleanup
+installShadowsocks(){
+    setupProfile
+    downloadFiles
+    writeProfile
+    startInstall
+    cleanUp
 }
+
+# Distro Detection
+type apt >/dev/null 2>&1
+if [ $? -eq 0 ];then
+    # necessary depend μ
+    apt -y install bc lsb-release
+else 
+    if [ -s /etc/redhat-release ]; then
+        if [ -s /etc/centos-release ]; then
+            CENTOSVER=$(rpm -q centos-release | cut -d- -f3)
+            clear
+            echo -e "${ERROR} ${GREEN}CentOS${PLAIN} ${GREEN}${CENTOSVER}${PLAIN} is not supported. Please reinstall to Debian / Ubuntu and try again."
+            exit 1
+        else
+            RADHATVER=$(cat /etc/redhat-release | sed -r 's/.* ([0-9]+)\..*/\1/')
+            clear
+            echo -e "${ERROR} ${GREEN}RedHat${PLAIN} ${GREEN}${RADHATVER}${PLAIN} is not supported. Please reinstall to Debian / Ubuntu and try again."
+            exit 1
+        fi
+    fi
+fi
 
 # OS
 OSID=$(grep ^ID= /etc/os-release | cut -d= -f2)
@@ -465,45 +500,36 @@ COREVER=$(uname -r | grep -Eo '[0-9].[0-9]+' | sed -n '1,1p')
 MEMKB=$(cat /proc/meminfo | grep MemTotal | awk -F':' '{print $2}' | grep -o '[0-9]\+')
 MEMMB=$(expr $MEMKB / 1024)
 MEMGB=$(expr $MEMMB / 1024)
-INSTALL_MARK=0
-
-# RedHat not support
-if [ -s /etc/redhat-release ]; then
-    clear
-    echo -e "${ERROR} RedHat and CentOS is not supported. Please reinstall to Debian / Ubuntu and try again."
-    exit 1
-fi
+INSMARK=0
 
 # Debian & Ubuntu
 case "$OSVER" in
-    unstable|sid)
-    	# Debian unstable
-        clear
-        echo -e "${WARNING} We strongly encourage you to use stable release."
-        exit 1
-	    ;;
+    wheezy)
+        # Debian 7.0 wheezy
+        INSMARK=1
+        ;;
     jessie)
     	# Debian 8.0 jessie
-        INSTALL_MARK=1
+        INSMARK=1
 	    ;;
     stretch)
         # Debian 9.0 stretch
-        INSTALL_MARK=1
+        INSMARK=1
+        ;;
+    trusty)
+        # Ubuntu 14.04 trusty LTS
+        INSMARK=1
         ;;
     xenial)
-	    # Ubuntu 16.04 xenial
-        INSTALL_MARK=1
+	    # Ubuntu 16.04 xenial LTS
+        INSMARK=1
 	    ;;
-    zesty)
-        # Ubuntu 17.04 zesty
-        INSTALL_MARK=1
-        ;;
     bionic)
-        # Ubuntu 18.04 bionic
-	    INSTALL_MARK=1
+        # Ubuntu 18.04 bionic LTS
+	    INSMARK=1
         ;;
     *)
-        echo -e "${ERROR} Sorry,$OSID $OSVER is too old, please update to retry."
+        echo -e "${ERROR} Sorry,$OSID $OSVER is too old or unsupport, please update to retry."
         exit 1
         ;;
 esac
@@ -518,20 +544,20 @@ echo
 
 # Initialization step
 case "$1" in
-    install)
-        rootness
-        if [ $INSTALL_MARK -eq 1 ]; then
-            $1_shadowsocks
+    install|-i|--install)
+        rootNess
+        if [ $INSMARK -eq 1 ]; then
+            installShadowsocks
         fi
-        optimize_shadowsocks
+        optimizeShadowsocks
         ;;
-    uninstall)
-        rootness
-        $1_shadowsocks
+    uninstall|-u|--uninstall)
+        rootNess
+        uninstallShadowsocks
         ;;
     *)
         clear
-        echo "Usage: $0 [install|uninstall]"
-        exit 1
+        displayHelp
+        exit 0
         ;;
 esac
