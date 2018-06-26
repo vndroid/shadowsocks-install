@@ -404,20 +404,20 @@ EOF
 
 # Display Help info
 displayHelp(){
-	echo "${UNDERLINE}Usage${PLAIN}:"
-	echo "  $0 [OPTIONAL FLAGS]"
+	echo -e "${UNDERLINE}Usage${PLAIN}:"
+	echo -e "  $0 [OPTIONAL FLAGS]"
 	echo
-	echo "shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu."
+	echo -e "shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu."
 	echo
-	echo "${UNDERLINE}Options${PLAIN}:"
-    echo "   ${BOLD}-i, --install${PLAIN}      Install shadowsocks."
-    echo "   ${BOLD}-u, --uninstall${PLAIN}    Uninstall shadowsocks."
-	echo "   ${BOLD}-v, --version${PLAIN}      Display current script version."
-	echo "   ${BOLD}-h, --help${PLAIN}         Display this help."
+	echo -e "${UNDERLINE}Options${PLAIN}:"
+    echo -e "   ${BOLD}-i, --install${PLAIN}      Install shadowsocks."
+    echo -e "   ${BOLD}-u, --uninstall${PLAIN}    Uninstall shadowsocks."
+	echo -e "   ${BOLD}-v, --version${PLAIN}      Display current script version."
+	echo -e "   ${BOLD}-h, --help${PLAIN}         Display this help."
     echo
-    echo "${UNDERLINE}shadowsocks.sh${PLAIN} - Version ${scriptVersion} "
-    echo "Modify Date ${scriptDate}"
-	echo "Created by and licensed to WaveWorkShop <waveworkshop@outlook.com>"
+    echo -e "${UNDERLINE}shadowsocks.sh${PLAIN} - Version ${scriptVersion} "
+    echo -e "Modify Date ${scriptDate}"
+	echo -e "Created by and licensed to WaveWorkShop <waveworkshop@outlook.com>"
 }
 
 # Uninstall Shadowsocks
