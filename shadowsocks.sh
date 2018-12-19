@@ -256,8 +256,8 @@ writeProfile(){
 EOF
 }
 
-# Compile shadowsocks
-compile_install(){
+# Install shadowsocks
+programInstall(){
     # Install libsodium
     tar zxvf LATEST.tar.gz
     pushd libsodium-stable
@@ -342,7 +342,7 @@ optimizeShadowsocks(){
             # Backup default file
             cp -a /etc/sysctl.conf /etc/sysctl.conf.bak
             # Use Google BBR
-            cat >> /etc/sysctl.conf <<EOF
+            cat >> /etc/sysctl.conf <<'EOF'
 fs.file-max = 51200
             
 net.core.rmem_max = 67108864
@@ -371,7 +371,7 @@ EOF
             # 1.Reuse ports and conections as soon as possible.
             # 2.Enlarge the queues and buffers as large as possible.
             # 3.Choose the TCP congestion algorithm for large latency and high throughput.
-            cat >> /etc/sysctl.conf <<EOF
+            cat >> /etc/sysctl.conf <<'EOF'
 fs.file-max = 51200
 
 net.core.rmem_max = 67108864
@@ -467,7 +467,7 @@ installShadowsocks(){
     setupProfile
     downloadFiles
     writeProfile
-    startInstall
+    programInstall
     cleanUp
 }
 
