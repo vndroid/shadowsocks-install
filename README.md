@@ -28,36 +28,58 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 
 ## How to use:
 
-### Install
+### Download
+
 ```bash
-wget https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks.sh
-chmod +x shadowsocks.sh
-./shadowsocks.sh install 2>&1 | tee shadowsocks.log
+# wget https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks.sh
+# chmod +x shadowsocks.sh
 ```
+
+### Install
+
+```bash
+# ./shadowsocks.sh install 2>&1 | tee shadowsocks.log
+```
+
+> Notice: Must be as root user run this command.
 
 ### Uninstall
 
 ```bash
-./shadowsocks.sh uninstall
+# ./shadowsocks.sh uninstall
 ```
 
 ### Configure and start the service
+
+```bash
+# vi /etc/shadowsocks.json
 ```
-# Edit the configuration file
-vi /etc/shadowsocks.json
 
-# Start the service
-/etc/init.d/shadowsocks start    # for sysvinit
+> Edit the configuration file
 
-# Stop the service
-/etc/init.d/shadowsocks stop
-
-# Check service status
-/etc/init.d/shadowsocks status
-
-# View the log
-tail -f /var/log/shadowsocks.log
+```bash
+# /etc/init.d/shadowsocks start
 ```
+
+> Start the service via sysvinit
+
+```bash
+# /etc/init.d/shadowsocks stop
+```
+
+> Stop the service
+
+```bash
+# /etc/init.d/shadowsocks status
+```
+
+> Check service status
+
+```bash
+# tail -f /var/log/shadowsocks.log
+```
+
+>  View the log
 
 ## Report issues
 
