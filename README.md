@@ -11,7 +11,7 @@ Current lauguage: English | [Simplified Chinese](/README_CN.md)
 
 ## Summary
 
-This script can compile and install for Linux server automatic by [@wavengine](https://github.com/wavengine)
+This script can compile and install for Linux server automatic by [@Vndroid](https://github.com/Vndroid/)
 
 ## Features
 
@@ -19,9 +19,10 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 
 ## Support:
 
-* Debian 7.0 *Wheezy*
+* Debian 7 *Wheezy*
 * Debian 8 *Jessie*
 * Debian 9 *Stretch*
+* Debian 10 *Buster*
 * Ubuntu 14.04 *Trusty*
 * Ubuntu 16.04 *Xenial*
 * Ubuntu 18.04 *Bionic*
@@ -31,7 +32,7 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 ### Download
 
 ```bash
-# wget https://raw.githubusercontent.com/wavengine/shadowsocks-install/master/shadowsocks.sh
+# wget https://raw.githubusercontent.com/Vndroid/shadowsocks-install/master/shadowsocks.sh
 # chmod +x shadowsocks.sh
 ```
 
@@ -51,35 +52,35 @@ Automatically deploy servers and Optimize the shadowsocks server on Linux.
 
 ### Configure and start the service
 
+Edit the configuration file
+
 ```bash
 # vi /etc/shadowsocks.json
 ```
 
-> Edit the configuration file
+Start the service via sysvinit
 
 ```bash
 # /etc/init.d/shadowsocks start
 ```
 
-> Start the service via sysvinit
+Stop the service via sysvinit
 
 ```bash
 # /etc/init.d/shadowsocks stop
 ```
 
-> Stop the service
+Check service status
 
 ```bash
 # /etc/init.d/shadowsocks status
 ```
 
-> Check service status
+View the shadowsocks server log
 
 ```bash
 # tail -f /var/log/shadowsocks.log
 ```
-
->  View the log
 
 ## Report issues
 
