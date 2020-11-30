@@ -22,6 +22,7 @@
 * Ubuntu 14.04 *Trusty*
 * Ubuntu 16.04 *Xenial*
 * Ubuntu 18.04 *Bionic*
+* Ubuntu 20.04 *focal*
 
 ## 使用方法
 

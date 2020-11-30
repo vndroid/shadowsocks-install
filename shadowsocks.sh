@@ -17,8 +17,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-scriptVersion="3.0.2"
-scriptDate="20180626"
+scriptVersion="3.0.3"
+scriptDate="20201130"
 
 clear
 echo
@@ -217,7 +217,15 @@ setupProfile(){
     char=`get_char`
     # Install necessary dependencies
     apt -y update
-    apt -y install python python-dev python-pip python-setuptools python-m2crypto curl wget unzip gcc swig automake make perl cpio build-essential
+    apt -y install curl wget unzip gcc swig automake make perl cpio build-essential
+    if [ $DEPMARK -ne 0 ]; then
+        apt -y install python2 python2-dev libssl-dev
+        curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
+        python2 get-pip.py
+        pip2 install setuptools m2crypto
+    else
+        apt -y install python python-dev python-pip python-setuptools python-m2crypto
+    fi
     # Return Home
     cd ${cur_dir}
 }
@@ -259,7 +267,7 @@ EOF
 # Install shadowsocks
 programInstall(){
     # Install libsodium
-    tar zxvf LATEST.tar.gz
+    tar xf LATEST.tar.gz
     pushd libsodium-stable
     ./configure && make -j2 && make install
     if [ $? -ne 0 ]; then
@@ -279,7 +287,7 @@ programInstall(){
     fi
 
     cd ${cur_dir}/shadowsocks-master
-    python setup.py install --record /usr/local/shadowsocks_install.log
+    python2 setup.py install --record /usr/local/shadowsocks_install.log
 
     if [ -f /usr/bin/ssserver ] || [ -f /usr/local/bin/ssserver ]; then
         chmod +x /etc/init.d/shadowsocks
@@ -307,7 +315,7 @@ programInstall(){
 # Cleanup install files
 cleanUp(){
     cd ${cur_dir}
-    rm -rf master.zip shadowsocks-master LATEST.tar.gz
+    rm -rf master.zip LATEST.tar.gz shadowsocks-master libsodium-stable
 }
 
 # Optimize the shadowsocks server on Linux
@@ -404,20 +412,20 @@ EOF
 
 # Display Help info
 displayHelp(){
-	echo -e "${UNDERLINE}Usage${PLAIN}:"
-	echo -e "  $0 [OPTIONAL FLAGS]"
-	echo
-	echo -e "shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu."
-	echo
-	echo -e "${UNDERLINE}Options${PLAIN}:"
+    echo -e "${UNDERLINE}Usage${PLAIN}:"
+    echo -e "  $0 [OPTIONAL FLAGS]"
+    echo
+    echo -e "shadowsocks.sh - a CLI Bash script to install shadowsocks server automatic for Debian / Ubuntu."
+    echo
+    echo -e "${UNDERLINE}Options${PLAIN}:"
     echo -e "   ${BOLD}-i, --install${PLAIN}      Install shadowsocks."
     echo -e "   ${BOLD}-u, --uninstall${PLAIN}    Uninstall shadowsocks."
-	echo -e "   ${BOLD}-v, --version${PLAIN}      Display current script version."
-	echo -e "   ${BOLD}-h, --help${PLAIN}         Display this help."
+    echo -e "   ${BOLD}-v, --version${PLAIN}      Display current script version."
+    echo -e "   ${BOLD}-h, --help${PLAIN}         Display this help."
     echo
     echo -e "${UNDERLINE}shadowsocks.sh${PLAIN} - Version ${scriptVersion} "
     echo -e "Modify Date ${scriptDate}"
-	echo -e "Created by and licensed to WaveWorkShop <waveworkshop@outlook.com>"
+    echo -e "Created by and licensed to WaveWorkShop <waveworkshop@outlook.com>"
 }
 
 # Uninstall Shadowsocks
@@ -501,6 +509,7 @@ MEMKB=$(cat /proc/meminfo | grep MemTotal | awk -F':' '{print $2}' | grep -o '[0
 MEMMB=$(expr $MEMKB / 1024)
 MEMGB=$(expr $MEMMB / 1024)
 INSMARK=0
+DEPMARK=0
 
 # Debian & Ubuntu
 case "$OSVER" in
@@ -509,11 +518,15 @@ case "$OSVER" in
         INSMARK=1
         ;;
     jessie)
-    	# Debian 8.0 jessie
+        # Debian 8.0 jessie
         INSMARK=1
-	    ;;
+        ;;
     stretch)
         # Debian 9.0 stretch
+        INSMARK=1
+        ;;
+    buster)
+        # Debian 10.0 buster
         INSMARK=1
         ;;
     trusty)
@@ -521,12 +534,17 @@ case "$OSVER" in
         INSMARK=1
         ;;
     xenial)
-	    # Ubuntu 16.04 xenial LTS
+        # Ubuntu 16.04 xenial LTS
         INSMARK=1
-	    ;;
+        ;;
     bionic)
         # Ubuntu 18.04 bionic LTS
-	    INSMARK=1
+        INSMARK=1
+        ;;
+    focal)
+        # Ubuntu 20.04 focal LTS
+        INSMARK=1
+        DEPMARK=2
         ;;
     *)
         echo -e "${ERROR} Sorry,$OSID $OSVER is too old or unsupport, please update to retry."
