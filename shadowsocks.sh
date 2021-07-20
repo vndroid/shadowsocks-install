@@ -220,7 +220,7 @@ setupProfile(){
     apt -y install curl wget unzip gcc swig automake make perl cpio build-essential
     if [ $DEPMARK -ne 0 ]; then
         apt -y install python2 python2-dev libssl-dev
-        curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
         python2 get-pip.py
         pip2 install setuptools m2crypto
     else
